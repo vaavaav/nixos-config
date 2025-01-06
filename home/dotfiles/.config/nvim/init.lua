@@ -1,0 +1,308 @@
+local vim = vim
+----------------------------------------------------------------------------------------
+-- General settings
+----------------------------------------------------------------------------------------
+vim.o.ignorecase = true                                                -- If true, ignore case in search pattern
+vim.o.relativenumber = true                                            -- If true, show relative line numbers
+vim.o.number = true                                                    -- If true, show absolute line numbers
+vim.o.shiftwidth = 2                                                   -- Number of spaces to use for each step of (auto)indent
+vim.o.smarttab = true                                                  -- If true, insert indents automatically
+vim.o.expandtab = true                                                 -- If true, convert tabs to spaces
+vim.o.hlsearch = true                                                  -- If true, highlight search results
+vim.g.mapleader = "\\"                                                 -- Set leader key
+vim.o.termguicolors = true                                             -- If true, use 24-bit RGB colors in the terminal
+vim.o.autoread = true                                                  -- If true, automatically read files when they are changed outside of Vim
+vim.o.clipboard = "unnamedplus"                                        -- Use system clipboard
+vim.o.signcolumn = "yes"                                               -- Prevent text shifting when diagnostics appear/disappear
+vim.o.scrolloff = 8                                                    -- Keep context above/below cursor
+vim.o.undofile = true                                                  -- Persistent undo across sessions
+vim.o.updatetime = 300                                                 -- Faster diagnostics/CursorHold (default 4000ms is sluggish)
+vim.o.splitright = true                                                -- Vertical splits open to the right
+vim.o.splitbelow = true                                                -- Horizontal splits open below
+
+vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>", { silent = true }) -- Clear search highlights
+vim.keymap.set({ "n", "v" }, "<c-u>", "<c-u>zz")                       -- Center after scrolling up
+vim.keymap.set({ "n", "v" }, "<c-d>", "<c-d>zz")                       -- Center after scrolling down
+vim.keymap.set({ "n", "v" }, "n", "nzz")                               -- Center after jumping to next match
+vim.keymap.set({ "n", "v" }, "N", "Nzz")                               -- Center after jumping to previous match
+vim.keymap.set("n", "<leader>nd", function() vim.diagnostic.goto_next({ float = false }) end)
+vim.keymap.set("n", "<leader>pd", function() vim.diagnostic.goto_prev({ float = false }) end)
+vim.keymap.set("n", "<leader>d", function()
+  vim.diagnostic.config({ virtual_text = not vim.diagnostic.config().virtual_text })
+end, { noremap = true, silent = true }) -- Toggle diagnostic virtual text on and off
+
+vim.diagnostic.config({
+  signs = {
+    text = {
+      [vim.diagnostic.severity.ERROR] = "",
+      [vim.diagnostic.severity.WARN] = "",
+      [vim.diagnostic.severity.INFO] = "",
+      [vim.diagnostic.severity.HINT] = "",
+    }
+  }
+})
+----------------------------------------------------------------------------------------
+-- Bootstrap lazy
+----------------------------------------------------------------------------------------
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  vim.notify("Lazy not found, cloning...", "info", { title = "Lazy" })
+  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+  local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
+  if vim.v.shell_error ~= 0 then
+    vim.api.nvim_echo({
+      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+      { out,                            "WarningMsg" },
+      { "\nPress any key to exit..." },
+    }, true)
+    vim.fn.getchar()
+    os.exit(1)
+  end
+end
+vim.opt.rtp:prepend(lazypath)
+----------------------------------------------------------------------------------------
+-- Setup lazy and plugins
+----------------------------------------------------------------------------------------
+require("lazy").setup({
+  {
+    "rebelot/kanagawa.nvim",
+    config = function()
+      require("kanagawa").load("wave")
+    end,
+  },
+  { "nvim-tree/nvim-web-devicons" },
+  {
+    'nvim-telescope/telescope.nvim',
+    tag = '0.1.8',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    config = function()
+      vim.keymap.set('', '<C-f>', ':Telescope find_files<CR>', { noremap = true, silent = true })
+      vim.keymap.set('', '<C-g>', ':Telescope live_grep<CR>', { noremap = true, silent = true })
+      require('telescope').setup {
+        defaults = {
+          mappings = {
+            i = {
+              ["<C-j>"] = require('telescope.actions').move_selection_next,
+              ["<C-k>"] = require('telescope.actions').move_selection_previous,
+              ["<CR>"] = require('telescope.actions').select_default,
+              ["<Esc>"] = require('telescope.actions').close,
+            },
+            n = {
+              ["<C-j>"] = require('telescope.actions').move_selection_next,
+              ["<C-k>"] = require('telescope.actions').move_selection_previous,
+              ["<Esc>"] = require('telescope.actions').close,
+            }
+          },
+          vimgrep_arguments = {
+            "rg",
+            "--no-heading",
+            "--with-filename",
+            "--line-number",
+            "--column",
+            "--smart-case",
+            "--no-ignore",
+          }
+        },
+        pickers = {
+          find_files = {
+            find_command = { 'fd', '--type', 'f', '--hidden', '--follow', '--no-ignore', '--exclude', '.git' }
+          }
+        },
+        extensions = {
+        }
+      }
+    end,
+  },
+  { "jinh0/eyeliner.nvim" },
+  {
+    "goolord/alpha-nvim",
+    config = function()
+      require("alpha").setup(require("alpha.themes.startify").config)
+    end,
+  },
+  {
+    "aserowy/tmux.nvim",
+    config = function()
+      require('tmux').setup({
+        resize = {
+          resize_step_x = 5,
+          resize_step_y = 5,
+        }
+      })
+      vim.keymap.set("n", "<C-M-h>", ":lua require('tmux').resize_left()<CR>", { silent = true })
+      vim.keymap.set("n", "<C-M-j>", ":lua require('tmux').resize_down()<CR>", { silent = true })
+      vim.keymap.set("n", "<C-M-k>", ":lua require('tmux').resize_up()<CR>", { silent = true })
+      vim.keymap.set("n", "<C-M-l>", ":lua require('tmux').resize_right()<CR>", { silent = true })
+    end,
+  },
+  {
+    "nvim-lualine/lualine.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      require('lualine').setup {
+        options = {
+          icons_enabled = true,
+          theme = 'palenight',
+        },
+        sections = {
+          lualine_a = { 'mode' },
+          lualine_b = { 'diagnostics' },
+          lualine_c = { { 'branch', icon = '' }, 'diff' },
+          lualine_x = { 'os.date("%H:%M | %a, %d-%m-%y")' },
+          lualine_y = {
+            {
+              'filename',
+              path = 1,
+            }
+          },
+          lualine_z = {
+            'location'
+          },
+        }
+      }
+    end,
+  },
+  {
+    "nvim-tree/nvim-tree.lua",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      require("nvim-tree").setup({
+        sort = {
+          sorter = "case_sensitive",
+        },
+        view = {
+          width = 30,
+        },
+        renderer = {
+          group_empty = true,
+        },
+        filters = {
+          dotfiles = false,
+          git_ignored = false,
+        },
+      })
+      vim.keymap.set("n", "<C-n>", ":NvimTreeToggle<CR>")
+    end,
+  },
+  {
+    'lervag/vimtex',
+    lazy = false,
+    init = function()
+      vim.g.vimtex_view_method = 'zathura'
+      vim.g.vimtex_compiler_method = 'latexmk'
+      vim.g.vimtex_latexmk_automatic = 1
+      vim.g.vimtex_complete_enabled = 1
+      vim.g.vimtex_quickfix_enabled = 0
+      vim.g.vimtex_syntax_enabled = 0
+      vim.keymap.set("n", "<leader>lv", ':VimtexView<CR>')
+      vim.keymap.set("n", "<leader>lc", ':VimtexCompile<CR>')
+    end
+  },
+
+  {
+    "github/copilot.vim",
+    config = function()
+      vim.g.copilot_no_tab_map = true
+      vim.g.copilot_enabled = true
+      vim.keymap.set("i", "<C-l>", 'copilot#Accept("<CR>")',
+        { silent = true, expr = true, replace_keycodes = false })
+      vim.keymap.set("i", "<C-;>", 'copilot#AcceptLine("<CR>")',
+        { silent = true, expr = true, replace_keycodes = false })
+      vim.keymap.set('', "<leader>c", function()
+          vim.g.copilot_enabled = not vim.g.copilot_enabled
+          vim.notify('Copilot ' .. (vim.g.copilot_enabled and 'enabled' or 'disabled'), 'info')
+        end,
+        { noremap = true, silent = true })
+    end,
+  },
+  -- LSP and completion
+  { "L3MON4D3/LuaSnip" },
+  { "rafamadriz/friendly-snippets" },
+  { "hrsh7th/cmp-nvim-lsp" },
+  { "hrsh7th/nvim-cmp" },
+  { "hrsh7th/cmp-buffer" },
+  { "hrsh7th/cmp-path" },
+  { "saadparwaiz1/cmp_luasnip" },
+  { "hrsh7th/cmp-nvim-lua" },
+  { "hrsh7th/cmp-omni" },
+  {
+    "neovim/nvim-lspconfig",
+    config = function()
+      vim.lsp.enable({ 'ccls', 'lua_ls', 'cmake', 'bashls', 'pylsp', 'nil_ls', 'ltex', 'hls' })
+      vim.lsp.config('pylsp', {
+        settings = {
+          pylsp = {
+            plugins = {
+              black = { enabled = true },
+              isort = { enabled = true },
+              pycodestyle = { enabled = false },
+              mccabe = { enabled = false },
+              pyflakes = { enabled = false },
+              yapf = { enabled = false },
+              autopep8 = { enabled = false },
+            }
+          }
+        }
+      })
+      vim.lsp.config('nil_ls', {
+        settings = {
+          ['nil'] = {
+            formatting = {
+              command = { "nixfmt" },
+            },
+          },
+        },
+      })
+
+      require("luasnip.loaders.from_vscode").lazy_load()
+
+      local cmp = require('cmp')
+
+      cmp.setup({
+        sources = {
+          { name = 'nvim_lsp' },
+          { name = 'luasnip' },
+          { name = 'buffer' },
+          { name = 'path' },
+          { name = 'omni' },
+        },
+        snippet = {
+          expand = function(args)
+            -- You need Neovim v0.10 to use vim.snippet
+            vim.snippet.expand(args.body)
+          end,
+        },
+        mapping = cmp.mapping.preset.insert({
+          ['<CR>'] = cmp.mapping.confirm({ select = true }),
+          ['<C-j>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
+          ['<C-k>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }),
+        }),
+      })
+
+      -- Format on save
+      local autoformat = true
+      vim.keymap.set('n', '<leader>f', function()
+        autoformat = not autoformat
+        vim.notify('Autoformat ' .. (autoformat and 'enabled' or 'disabled'), 'info', { title = 'Autoformat' })
+      end, { noremap = true, silent = true })
+
+      vim.api.nvim_create_autocmd("LspAttach", {
+        callback = function(event)
+          local id = vim.tbl_get(event, 'data', 'client_id')
+          local client = id and vim.lsp.get_client_by_id(id)
+          if client and client:supports_method("textDocument/formatting") then
+            vim.api.nvim_create_autocmd('BufWritePre', {
+              buffer = event.buf,
+              callback = function()
+                if autoformat then
+                  vim.lsp.buf.format({ async = false, timeout_ms = 10000 })
+                end
+              end
+            })
+          end
+        end,
+      })
+    end,
+  },
+
+})

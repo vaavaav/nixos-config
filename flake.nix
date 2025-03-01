@@ -9,7 +9,6 @@
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
   };
 
   outputs = { self, nixpkgs, home-manager, ... }@inputs:
@@ -45,11 +44,11 @@
         { }
         hosts;
 
-      homeConfigurations.${user} = home-manager.lib.homeManagerConfiguration {
+      homeConfigurations.${user} = home-manager.lib.homeManagerConfiguration rec {
         pkgs = nixpkgs.legacyPackages.${system};
         extraSpecialArgs = {
           inherit inputs homeStateVersion user;
-        };
+          autenticacao-gov-pt = import ./flakes/autenticacao-gov-pt { inherit pkgs; lib = pkgs.lib; }; };
 
         modules = [
           ./users/${user}/home.nix

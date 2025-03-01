@@ -1,4 +1,4 @@
-{ homeStateVersion, user, pkgs, lib, ... }:
+{ homeStateVersion, user, pkgs, lib, autenticacao-gov-pt, ... }:
 {
 
   nixpkgs.config.allowUnfree = true;
@@ -7,7 +7,6 @@
     username = user;
     homeDirectory = "/home/${user}";
     sessionVariables = {
-      NIX_SHELL_PRESERVE_PROMPT = 1;
       LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib";
     };
     stateVersion = homeStateVersion;
@@ -17,6 +16,7 @@
       model = "pc105";
     };
     packages = with pkgs; [
+      autenticacao-gov-pt
       arandr
       bash
       bash-language-server

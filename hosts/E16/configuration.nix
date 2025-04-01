@@ -11,6 +11,15 @@
     WLAN_INTERFACE = "wlp2s0";
   };
 
+  # Docker
+  virtualisation.docker = {
+    rootless = {
+      enable = true;
+      setSocketVariable = true;
+    };
+  };
+
+
   # Boot
   boot.loader.systemd-boot.enable = true;
   boot.loader.systemd-boot.configurationLimit = 3;

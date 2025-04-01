@@ -31,6 +31,7 @@
       fd
       feh
       firefox
+      fira-sans
       flameshot
       font-manager
       gcc
@@ -150,6 +151,13 @@
     enable = true;
     windowManager.command = "i3";
   };
+
+  # Blue filter
+  services.sctd = {
+    enable = true;
+    baseTemperature = 2500;
+  };
+
 
   # tmux
   home.activation.installTPM = lib.hm.dag.entryAfter [ ]

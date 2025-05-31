@@ -33,13 +33,15 @@
   # Networking
   networking.hostName = hostname;
   networking.networkmanager.enable = true;
+  networking.networkmanager.plugins = with pkgs; [
+    networkmanager-vpnc
+  ];
 
   # Sound
-  hardware.pulseaudio = {
+  services.pipewire = {
     enable = true;
-    package = pkgs.pulseaudioFull;
+    pulse.enable = true;
   };
-  services.pipewire.enable = false;
 
   # Users
   users = {
@@ -74,4 +76,10 @@
 
   # GUI settings
   programs.dconf.enable = true;
+
+  # Steam
+  programs.steam = {
+    enable = true;
+    extraCompatPackages = [pkgs.proton-ge-bin];
+  };
 }

@@ -119,7 +119,9 @@ pkgs.stdenv.mkDerivation rec {
   preFixup = ''
     # libxml-security-c.so.20 is deprecated
       find $out/app/lib -type f -name '*.so*' | while read lib; do
-       patchelf --replace-needed libxml-security-c.so.20 libxml-security-c.so.30 "$lib"
+       patchelf --replace-needed libxml-security-c.so.20 libxml-security-c.so "$lib"
+       patchelf --replace-needed libxerces-c-3.2.so libxerces-c.so "$lib"
+       patchelf --replace-needed libzip.so.5 libzip.so "$lib"
      done
 
     # Let the Qt apps know where to find plugins

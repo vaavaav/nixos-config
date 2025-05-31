@@ -24,7 +24,12 @@ nixos-rebuild switch --flake ./#<hostname>
 
 and the home-manager configuration:
 ```
-home-manager switch
+home-manager switch --flake ./#<username>
 ```
 
-
+Whenever the version is updated:
+```
+sudo nix flake update
+sudo nixos-rebuild switch --flake .#<hostname>
+home-manager switch --flake .#<username>
+```

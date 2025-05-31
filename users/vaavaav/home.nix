@@ -6,9 +6,6 @@
   home = {
     username = user;
     homeDirectory = "/home/${user}";
-    sessionVariables = {
-      LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib";
-    };
     stateVersion = homeStateVersion;
     keyboard = {
       layout = "us";
@@ -36,12 +33,15 @@
       font-manager
       gcc
       glibc
+      glib
       gnumake
       i3
       inter
       iosevka
       jdk
       kitty
+      libsForQt5.okular
+      libnotify
       libreoffice
       libtool
       lua-language-server
@@ -49,11 +49,12 @@
       man-pages-posix
       markdown-oxide
       material-design-icons
-      nerdfonts
+      nerd-fonts.symbols-only
       networkmanagerapplet
       networkmanager-openvpn
+      networkmanager-vpnc
       nil
-      nodejs_23
+      nodejs_24
       noisetorch
       noto-fonts
       obsidian
@@ -78,6 +79,7 @@
       tmux
       typst
       usbutils
+      vpnc
       xclip
       zathura
       zip
@@ -94,6 +96,13 @@
       sansSerif = [ "Inter" ];
     };
   };
+
+  # Fix for nerd-fonts
+  home.file.".local/share/fonts/NerdFonts" = {
+    source = "${pkgs.nerd-fonts.symbols-only}/share/fonts/truetype/NerdFonts/Symbols";
+    recursive = true;
+  };
+
 
   # Dotfiles
   home.file.".bashrc".source = ./.bashrc;
@@ -155,8 +164,25 @@
   # Blue filter
   services.sctd = {
     enable = true;
-    baseTemperature = 2500;
+    baseTemperature = 3000;
   };
+
+  # VPN 
+  home.activation.createUminhoVPN = lib.hm.dag.entryAfter ["networking"] ''
+  if ! ${pkgs.networkmanager}/bin/nmcli connection show "uminho-vpn" &>/dev/null; then
+    echo "Creating 'uminho-vpn' connection via nmcli..."
+
+    ${pkgs.networkmanager}/bin/nmcli connection add type vpn \
+      con-name "uminho-vpn" \
+      ifname -- \
+      vpn-type vpnc \
+      vpn.service-type org.freedesktop.NetworkManager.vpnc \
+      vpn.data "IPSec gateway=vpn.uminho.pt,IPSec ID=geral,Xauth username=d14110@di.uminho.pt" \
+      vpn.secrets "IPSec secret=geral"
+  else
+    echo "'uminho-vpn' connection already exists."
+  fi
+'';
 
 
   # tmux

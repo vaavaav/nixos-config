@@ -37,6 +37,16 @@ let
       maintainers = with lib.maintainers; [ vaavaav ];
     };
   };
+
+xercesc_3_2 = pkgs.xercesc.overrideAttrs (old: {
+    version = "3.2.3";
+    src = pkgs.fetchurl {
+      url = "mirror://apache/xerces/c/3/sources/xerces-c-3.2.3.tar.gz";
+      sha256 = "0zicsydx6s7carwr7q0csgkg1xncibd6lfp5chg2v2gvn54zr5pv";
+      
+    };
+  });
+
 in
 pkgs.stdenv.mkDerivation rec {
   name = "autenticacao-gov-pt";
@@ -78,7 +88,7 @@ pkgs.stdenv.mkDerivation rec {
     qt5.qtquickcontrols
     qt5.qtquickcontrols2
     qt5.qttools
-    xercesc
+    xercesc_3_2
     xml-security-c
   ];
 
@@ -117,11 +127,8 @@ pkgs.stdenv.mkDerivation rec {
   '';
 
   preFixup = ''
-    # libxml-security-c.so.20 is deprecated
       find $out/app/lib -type f -name '*.so*' | while read lib; do
-       patchelf --replace-needed libxml-security-c.so.20 libxml-security-c.so "$lib"
-       patchelf --replace-needed libxerces-c-3.2.so libxerces-c.so "$lib"
-       patchelf --replace-needed libzip.so.5 libzip.so "$lib"
+       patchelf --replace-needed libxml-security-c.so.20 libxml-security-c.so.30 "$lib"
      done
 
     # Let the Qt apps know where to find plugins

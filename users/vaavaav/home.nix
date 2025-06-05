@@ -50,6 +50,7 @@
       markdown-oxide
       material-design-icons
       nerd-fonts.symbols-only
+      nerd-fonts.iosevka
       networkmanagerapplet
       networkmanager-openvpn
       networkmanager-vpnc

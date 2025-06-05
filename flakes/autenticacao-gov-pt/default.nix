@@ -38,22 +38,34 @@ let
     };
   };
 
-xercesc_3_2 = pkgs.xercesc.overrideAttrs (old: {
+  xercesc_3_2 = pkgs.stdenv.mkDerivation rec {
+    pname = "xerces-c";
     version = "3.2.3";
+
     src = pkgs.fetchurl {
-      url = "mirror://apache/xerces/c/3/sources/xerces-c-3.2.3.tar.gz";
-      sha256 = "0zicsydx6s7carwr7q0csgkg1xncibd6lfp5chg2v2gvn54zr5pv";
-      
+      url = "mirror://apache/xerces/c/3/sources/${pname}-${version}.tar.gz";
+      hash = "sha256-+5b8SbH7iS0eZOU6atqKzPbw5tMM4JN5Vuxo05vXLH4=";
     };
-  });
+
+    nativeBuildInputs = [ pkgs.pkg-config ];
+    configureFlags = [ "--disable-static" ];
+
+    meta = {
+      description = "Validating XML parser written in a portable subset of C++";
+      homepage = "https://xerces.apache.org/xerces-c/";
+      license = lib.licenses.asl20;
+      platforms = lib.platforms.unix;
+    };
+  };
+
 
 in
 pkgs.stdenv.mkDerivation rec {
   name = "autenticacao-gov-pt";
-  version = "3.13.0";
+  version = "3.13.3";
   src = pkgs.fetchurl {
     url = "https://github.com/amagovpt/autenticacao.gov/releases/download/v${version}/pteid-mw-${version}.flatpak";
-    hash = "sha256-lKZFdbvuEX9eYC8ABvFY2yVtvEywatwZ8TuZn2c2Jb0=";
+    hash = "sha256-kUSUcX3/rPENdyd6ABeqADqK4CcSltwsdnmcgWzw8Fc=";
   };
 
   dontConfigure = true;

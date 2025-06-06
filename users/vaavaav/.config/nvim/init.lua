@@ -95,7 +95,7 @@ require("lazy").setup({
         pickers = {
           -- Default command for finding files
           find_files = {
-            find_command = { 'fd', '--type', 'f', '--hidden', '--follow', '--exclude', '.git' }
+            find_command = { 'fd', '--type', 'f', '--hidden', '--follow', '--no-ignore', '--exclude', '.git' }
           }
         },
         extensions = {}

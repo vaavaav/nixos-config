@@ -95,7 +95,7 @@ require("lazy").setup({
         pickers = {
           -- Default command for finding files
           find_files = {
-            find_command = { 'fd', '--type', 'f', '--hidden', '--follow', '--exclude', '.git' }
+            find_command = { 'fd', '--type', 'f', '--hidden', '--follow', '--no-ignore', '--exclude', '.git' }
           }
         },
         extensions = {}
@@ -110,17 +110,15 @@ require("lazy").setup({
     end,
   },
   {
-    "christoomey/vim-tmux-navigator",
-    lazy = false,
+    "aserowy/tmux.nvim",
     config = function()
-      vim.keymap.set("n", "<C-h>", "<cmd>TmuxNavigateLeft<CR>")
-      vim.keymap.set("n", "<C-l>", "<cmd>TmuxNavigateRight<CR>")
-      vim.keymap.set("n", "<C-j>", "<cmd>TmuxNavigateDown<CR>")
-      vim.keymap.set("n", "<C-k>", "<cmd>TmuxNavigateUp<CR>")
+      require('tmux').setup({
+        resize = {
+          resize_step_x = 5,
+          resize_step_y = 5,
+        }
+      })
     end,
-  },
-  {
-    "RyanMillerC/better-vim-tmux-resizer",
   },
   {
     "nvim-lualine/lualine.nvim",

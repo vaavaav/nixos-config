@@ -38,22 +38,34 @@ let
     };
   };
 
-xercesc_3_2 = pkgs.xercesc.overrideAttrs (old: {
+  xercesc_3_2 = pkgs.stdenv.mkDerivation rec {
+    pname = "xerces-c";
     version = "3.2.3";
+
     src = pkgs.fetchurl {
-      url = "mirror://apache/xerces/c/3/sources/xerces-c-3.2.3.tar.gz";
-      sha256 = "0zicsydx6s7carwr7q0csgkg1xncibd6lfp5chg2v2gvn54zr5pv";
-      
+      url = "mirror://apache/xerces/c/3/sources/${pname}-${version}.tar.gz";
+      hash = "sha256-+5b8SbH7iS0eZOU6atqKzPbw5tMM4JN5Vuxo05vXLH4=";
     };
-  });
+
+    nativeBuildInputs = [ pkgs.pkg-config ];
+    configureFlags = [ "--disable-static" ];
+
+    meta = {
+      description = "Validating XML parser written in a portable subset of C++";
+      homepage = "https://xerces.apache.org/xerces-c/";
+      license = lib.licenses.asl20;
+      platforms = lib.platforms.unix;
+    };
+  };
+
 
 in
 pkgs.stdenv.mkDerivation rec {
   name = "autenticacao-gov-pt";
-  version = "3.13.0";
+  version = "3.13.3";
   src = pkgs.fetchurl {
     url = "https://github.com/amagovpt/autenticacao.gov/releases/download/v${version}/pteid-mw-${version}.flatpak";
-    hash = "sha256-lKZFdbvuEX9eYC8ABvFY2yVtvEywatwZ8TuZn2c2Jb0=";
+    hash = "sha256-kUSUcX3/rPENdyd6ABeqADqK4CcSltwsdnmcgWzw8Fc=";
   };
 
   dontConfigure = true;
@@ -61,6 +73,8 @@ pkgs.stdenv.mkDerivation rec {
   dontWrapQtApps = true;
 
   nativeBuildInputs = with pkgs; [
+    makeWrapper
+    copyDesktopItems
     autoPatchelfHook
     flatpak
     ostree
@@ -92,50 +106,48 @@ pkgs.stdenv.mkDerivation rec {
     xml-security-c
   ];
 
-  desktopItem = pkgs.makeDesktopItem {
-    name = name;
-    exec = name;
-    desktopName = "Autenticação.gov";
-    genericName = "Portuguese eID Data";
-    comment = "Middleware for Electronic Identification in Portugal";
-    icon = "pt.gov.autenticacao";
-    terminal = false;
-    startupNotify = true;
-    categories = [ "Office" ];
-  };
-
   unpackPhase = ''
-    # Initialize the ostree repository
     ostree init --repo=pteid --mode=archive-z2
-    # Import the flatpak
-    ostree static-delta apply-offline --repo=pteid ${src} 
-    # Go to the latest commit (theoretically, the only one)
+    ostree static-delta apply-offline --repo=pteid ${src}
     ostree checkout --repo=pteid -U $(echo pteid/objects/*/*.commit | sed -E "s/.*\/([^\/]+)\/([^\/]+)\.commit$/\1\2/") pteid_out
   '';
 
-  installPhase = ''
-    mkdir -p $out/app/lib $out/app/share $out/share $out/bin
+  desktopItems = [
+    (pkgs.makeDesktopItem {
+      name = name;
+      exec = name;
+      desktopName = "Autenticação.gov";
+      genericName = "Portuguese eID Data";
+      comment = "Middleware for Electronic Identification in Portugal";
+      icon = "pt.gov.autenticacao";
+      terminal = false;
+      startupNotify = true;
+      categories = [ "Office" ];
+    })
+  ];
+
+  preInstall = ''
+    mkdir -p $out/share/applications $out/app/{lib,share} 
     cp -r pteid_out/files/bin $out/app
     cp -r pteid_out/files/lib/lib{pteid,CMD}* $out/app/lib/
     cp -r pteid_out/files/share/certs $out/app/share
     cp -r pteid_out/files/share/icons $out/share
-    cp -r ${desktopItem}/share/applications $out/share
+  '';
 
-    echo "#!/bin/env bash
-    ${pkgs.proot}/bin/proot -b $out/app:/app $out/app/bin/eidguiV2 \$@" > $out/bin/${name}
-    chmod +x $out/bin/${name}
+  postInstall = ''
+    makeWrapper "${pkgs.proot}/bin/proot" "$out/bin/${name}" \
+      --add-flags "-b" \
+      --add-flags "$out/app:/app" \
+      --add-flags "$out/app/bin/eidguiV2" \
+      --argv0 "$out/bin/eidguiV2"
   '';
 
   preFixup = ''
-      find $out/app/lib -type f -name '*.so*' | while read lib; do
-       patchelf --replace-needed libxml-security-c.so.20 libxml-security-c.so.30 "$lib"
-     done
-
-    # Let the Qt apps know where to find plugins
-     wrapQtApp $out/app/bin/eidguiV2 
-
-     # Auto patch all libraries
-     autoPatchelf $out/app
+    find $out/app/lib -type f -name '*.so*' | while read lib; do
+      patchelf --replace-needed libxml-security-c.so.20 libxml-security-c.so.30 "$lib"
+    done
+    wrapQtApp $out/app/bin/eidguiV2
+    autoPatchelf $out/app
   '';
 
   meta = {

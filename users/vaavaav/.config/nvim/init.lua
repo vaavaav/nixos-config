@@ -76,6 +76,7 @@ require("lazy").setup({
     config = function()
       vim.keymap.set('', '<C-f>', ':Telescope find_files<CR>', { noremap = true, silent = true })
       vim.keymap.set('', '<C-g>', ':Telescope live_grep<CR>', { noremap = true, silent = true })
+      vim.keymap.set('', '<leader>cs', ':Telescope colorscheme<CR>', { noremap = true, silent = true })
       require('telescope').setup {
         defaults = {
           mappings = {
@@ -223,14 +224,13 @@ require("lazy").setup({
         config = function()
           vim.g.copilot_no_tab_map = true
           vim.keymap.set("i", "<C-l>", 'copilot#Accept("<CR>")', { silent = true, expr = true, replace_keycodes = false })
+          vim.keymap.set("n", "<leader>tc", ':lua ToggleCopilot()<CR>', { noremap = true, silent = true })
           local status = 'enable'
           function ToggleCopilot()
             status = status == 'enable' and 'disable' or 'enable'
             vim.cmd('Copilot ' .. status)
             vim.notify('Copilot ' .. status .. 'd', 'info', { title = 'Copilot' })
           end
-
-          vim.keymap.set("n", "<leader>tc", ':lua ToggleCopilot()<CR>', { noremap = true, silent = true })
         end,
       },
 

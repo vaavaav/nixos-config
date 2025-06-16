@@ -31,6 +31,7 @@
       fira-sans
       flameshot
       font-manager
+      fzf
       gcc
       glibc
       glib

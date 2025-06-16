@@ -76,7 +76,8 @@ require("lazy").setup({
     config = function()
       vim.keymap.set('', '<C-f>', ':Telescope find_files<CR>', { noremap = true, silent = true })
       vim.keymap.set('', '<C-g>', ':Telescope live_grep<CR>', { noremap = true, silent = true })
-      vim.keymap.set('', '<leader>cs', ':Telescope colorscheme<CR>', { noremap = true, silent = true })
+      vim.keymap.set('', '<leader>cs', ':Telescope colorscheme enable_preview=true<CR>',
+        { noremap = true, silent = true })
       require('telescope').setup {
         defaults = {
           mappings = {
@@ -92,9 +93,16 @@ require("lazy").setup({
               ["<Esc>"] = require('telescope.actions').close,
             }
           },
+          vimgrep_arguments = {
+            "rg",
+            "--no-heading",
+            "--with-filename",
+            "--line-number",
+            "--column",
+            "--smart-case",
+          }
         },
         pickers = {
-          -- Default command for finding files
           find_files = {
             find_command = { 'fd', '--type', 'f', '--hidden', '--follow', '--no-ignore', '--exclude', '.git' }
           }

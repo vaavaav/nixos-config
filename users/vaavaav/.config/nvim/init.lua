@@ -107,7 +107,8 @@ require("lazy").setup({
             find_command = { 'fd', '--type', 'f', '--hidden', '--follow', '--no-ignore', '--exclude', '.git' }
           }
         },
-        extensions = {}
+        extensions = {
+        }
       }
     end,
   },
@@ -190,34 +191,6 @@ require("lazy").setup({
       vim.keymap.set("n", "<leader>lo", ':VimtexCompileOutput<CR>')
     end
   },
-  {
-    "renerocksai/telekasten.nvim",
-    dependencies = { 'nvim-telescope/telescope.nvim' },
-    config = function()
-      require("telekasten").setup {
-        home = vim.fn.expand("~/.notes"), -- Change to your actual notes directory
-        filename_space_subst = "",
-        filename_small_case = true,
-        vaults = {
-          zettelkasten = {
-            home = vim.fn.expand("~/.notes/zettelkasten"),
-          },
-        },
-        templates = vim.fn.expand("~/.notes/templates"),
-      }
-      vim.keymap.set("n", "<leader>z", "<cmd>Telekasten panel<CR>")
-      vim.keymap.set("n", "<leader>zn", "<cmd>Telekasten new_note<CR>")
-      vim.keymap.set("n", "<leader>zt", "<cmd>Telekasten new_templated_note<CR>")
-      vim.keymap.set("n", "<leader>zg", "<cmd>Telekasten search_notes<CR>")
-      vim.keymap.set("n", "<leader>zd", "<cmd>Telekasten goto_today<CR>")
-      vim.keymap.set("n", "<leader>zz", "<cmd>Telekasten follow_link<CR>")
-      vim.keymap.set("n", "<leader>zc", "<cmd>Telekasten show_calendar<CR>")
-      vim.keymap.set("n", "<leader>zb", "<cmd>Telekasten show_backlinks<CR>")
-      vim.keymap.set("n", "<leader>zI", "<cmd>Telekasten insert_img_link<CR>")
-      vim.keymap.set("i", "[[", "<cmd>Telekasten insert_link<CR>")
-    end,
-
-  },
   -- LSP
   {
     "VonHeikemen/lsp-zero.nvim",
@@ -231,14 +204,16 @@ require("lazy").setup({
         "github/copilot.vim",
         config = function()
           vim.g.copilot_no_tab_map = true
-          vim.keymap.set("i", "<C-l>", 'copilot#Accept("<CR>")', { silent = true, expr = true, replace_keycodes = false })
-          vim.keymap.set("n", "<leader>tc", ':lua ToggleCopilot()<CR>', { noremap = true, silent = true })
-          local status = 'enable'
-          function ToggleCopilot()
-            status = status == 'enable' and 'disable' or 'enable'
-            vim.cmd('Copilot ' .. status)
-            vim.notify('Copilot ' .. status .. 'd', 'info', { title = 'Copilot' })
-          end
+          vim.g.copilot_enabled = true
+          vim.keymap.set("i", "<C-l>", 'copilot#Accept("<CR>")',
+            { silent = true, expr = true, replace_keycodes = false })
+          vim.keymap.set("i", "<C-;>", 'copilot#AcceptLine("<CR>")',
+            { silent = true, expr = true, replace_keycodes = false })
+          vim.keymap.set('', "<leader>tc", function()
+              vim.g.copilot_enabled = not vim.g.copilot_enabled
+              vim.notify('Copilot ' .. (vim.g.copilot_enabled and 'enabled' or 'disabled'), 'info')
+            end,
+            { noremap = true, silent = true })
         end,
       },
 

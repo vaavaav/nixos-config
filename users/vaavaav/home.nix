@@ -50,6 +50,7 @@
       man-pages-posix
       markdown-oxide
       material-design-icons
+      mattermost-desktop
       nerd-fonts.symbols-only
       nerd-fonts.iosevka
       networkmanagerapplet

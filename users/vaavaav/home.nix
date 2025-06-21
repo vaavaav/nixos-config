@@ -1,4 +1,6 @@
 { homeStateVersion, user, pkgs, lib, autenticacao-gov-pt, ... }:
+let terminal = pkgs.kitty;
+in 
 {
 
   nixpkgs.config.allowUnfree = true;
@@ -40,7 +42,7 @@
       inter
       iosevka
       jdk
-      kitty
+      terminal
       libsForQt5.okular
       libnotify
       libreoffice
@@ -64,7 +66,6 @@
       openssl
       openvpn
       pavucontrol
-      picom
       playerctl
       polybarFull
       pylyzer
@@ -113,6 +114,74 @@
     source = ./.config;
     recursive = true;
   };
+
+
+  # GUI settings
+  gtk = {
+    enable = true;
+    gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
+    theme.name = "Adwaita";
+    iconTheme.name = "Adwaita";
+  };
+
+  # Git
+  programs.git = {
+    enable = true;
+    userName = "vaavaav";
+    userEmail = "the.jprp@gmail.com";
+    extraConfig = {
+      init.defaultBranch = "main";
+    };
+  };
+
+  # Blue filter
+  services.sctd = {
+    enable = true;
+    baseTemperature = 3000;
+  };
+
+  # SSH
+  programs.ssh = {
+    enable = true;
+    matchBlocks = {
+      "cloud*" = {
+        user = "gsd";
+        hostname = "%h.cluster.lsd.di.uminho.pt";
+        identityFile = "/home/${user}/.ssh/cloudinhas";
+        forwardAgent = true;
+      };
+      "deucalion" = {
+        user = "jose.p.peixoto";
+        hostname = "login.deucalion.macc.fccn.pt";
+        identityFile = "/home/${user}/.ssh/deucalion";
+        forwardAgent = true;
+      };
+    };
+  };
+
+  # VPN 
+  home.activation.createUminhoVPN = lib.hm.dag.entryAfter ["networking"] ''
+  if ! ${pkgs.networkmanager}/bin/nmcli connection show "uminho-vpn" &>/dev/null; then
+    echo "Creating 'uminho-vpn' connection via nmcli..."
+
+    ${pkgs.networkmanager}/bin/nmcli connection add type vpn \
+      con-name "uminho-vpn" \
+      ifname -- \
+      vpn-type vpnc \
+      vpn.service-type org.freedesktop.NetworkManager.vpnc \
+      vpn.data "IPSec gateway=vpn.uminho.pt,IPSec ID=geral,Xauth username=d14110@di.uminho.pt" \
+      vpn.secrets "IPSec secret=geral"
+  else
+    echo "'uminho-vpn' connection already exists."
+  fi
+'';
+
+
+  # Limiting number of generations
+  home.activation.pruneOldGenerations = lib.hm.dag.entryAfter [ "nixos-rebuild" ]
+    ''
+      nix-env --delete-generations '+4'
+    '';
 
   # Nvim
   programs.neovim = {
@@ -166,76 +235,52 @@
     '';
   };
 
-
-  programs.ssh = {
-    enable = true;
-    matchBlocks = {
-      "cloud*" = {
-        user = "gsd";
-        hostname = "%h.cluster.lsd.di.uminho.pt";
-        identityFile = "/home/${user}/.ssh/cloudinhas";
-        forwardAgent = true;
-      };
-      "deucalion" = {
-        user = "jose.p.peixoto";
-        hostname = "login.deucalion.macc.fccn.pt";
-        identityFile = "/home/${user}/.ssh/deucalion";
-        forwardAgent = true;
-      };
-    };
-  };
-
-  # GUI settings
-  gtk = {
-    enable = true;
-    gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
-    theme.name = "Adwaita";
-    iconTheme.name = "Adwaita";
-  };
-
-  # Git
-  programs.git = {
-    enable = true;
-    userName = "vaavaav";
-    userEmail = "the.jprp@gmail.com";
-    extraConfig = {
-      init.defaultBranch = "main";
-    };
-  };
-
   # i3
   xsession = {
     enable = true;
     windowManager.command = "i3";
   };
 
-  # Blue filter
-  services.sctd = {
+  # Picom
+  services.picom = {
     enable = true;
-    baseTemperature = 3000;
+    fade = true;
+    fadeSteps = [ 0.03 0.03 ];
+    activeOpacity = 1.0;
+    inactiveOpacity = 1.0;
+    opacityRules = [
+      "95:class_g = '${terminal.pname}' && focused"
+      "90:class_g = '${terminal.pname}' && !focused"
+    ];
+    backend = "glx";
+    vSync = true;
+    settings = {
+      frame-opacity = 0.9;
+      focus-exclude = [ "class_g = 'Cairo-clock'" ];
+      blur = {
+        method = "dual_kawase";
+        strength = 2;
+      };
+      blur-background = true;
+      blur-background-frame = false;
+      blur-background-fixed = true;
+      blur-background-exclude = [
+        "window_type = 'desktop' && class_g != '${terminal.pname}'"
+      ];
+      log-level = "warn";
+      wintypes = {
+        tooltip = {
+          fade = true;
+          shadow = true;
+          opacity = 0.75;
+          focus = true;
+          full-shadow = false;
+        };
+        dock.shadow = false;
+        dnd.shadow = false;
+        popup_menu.opacity = 0.9;
+        dropdown_menu.opacity = 0.9;
+      };
+    };
   };
-
-  # VPN 
-  home.activation.createUminhoVPN = lib.hm.dag.entryAfter ["networking"] ''
-  if ! ${pkgs.networkmanager}/bin/nmcli connection show "uminho-vpn" &>/dev/null; then
-    echo "Creating 'uminho-vpn' connection via nmcli..."
-
-    ${pkgs.networkmanager}/bin/nmcli connection add type vpn \
-      con-name "uminho-vpn" \
-      ifname -- \
-      vpn-type vpnc \
-      vpn.service-type org.freedesktop.NetworkManager.vpnc \
-      vpn.data "IPSec gateway=vpn.uminho.pt,IPSec ID=geral,Xauth username=d14110@di.uminho.pt" \
-      vpn.secrets "IPSec secret=geral"
-  else
-    echo "'uminho-vpn' connection already exists."
-  fi
-'';
-
-
-  # Limiting number of generations
-  home.activation.pruneOldGenerations = lib.hm.dag.entryAfter [ "nixos-rebuild" ]
-    ''
-      nix-env --delete-generations '+4'
-    '';
 }

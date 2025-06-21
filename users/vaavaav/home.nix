@@ -127,9 +127,7 @@
     enable = true;
     userName = "vaavaav";
     userEmail = "the.jprp@gmail.com";
-    extraConfig = {
-      init.defaultBranch = "main";
-    };
+    extraConfig.init.defaultBranch = "main";
   };
 
   # Blue filter

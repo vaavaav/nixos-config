@@ -124,6 +124,7 @@ require("lazy").setup({
     config = function()
       require('tmux').setup({
         resize = {
+          enable_default_keybindings = true,
           resize_step_x = 5,
           resize_step_y = 5,
         }

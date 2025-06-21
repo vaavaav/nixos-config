@@ -79,7 +79,6 @@
       texlab
       texliveFull
       thunderbird
-      tmux
       typst
       usbutils
       vpnc
@@ -121,6 +120,52 @@
     viAlias = true;
     vimAlias = true;
   };
+
+  # Tmux
+  programs.tmux = {
+    enable = true;
+    mouse = true;
+    terminal = "screen-256color";  
+    baseIndex = 1;
+    keyMode = "vi";
+    sensibleOnTop = true;
+    plugins = with pkgs; [
+      tmuxPlugins.yank
+      {
+        plugin = tmuxPlugins.kanagawa;
+        extraConfig = ''
+          set -g @kanagawa-theme 'wave'
+          set -g @kanagawa-show-flags true
+          set -g @kanagawa-show-empty-plugins false
+          set -g @kanagawa-plugins "ssh-session time"
+          set -g @kanagawa-ssh-session-colors "light_purple white"
+          set -g @kanagawa-time-colors "dark_purple white"
+          set -g @kanagawa-time-format "%A %d/%m %I:%M %p"
+          set -g @kanagawa-git-show-remote-status true
+          '';
+      }
+    ];
+    extraConfig = ''
+      set -g update-environment "SSH_ASKPASS SSH_AUTH_SOCK SSH_AGENT_PID SSH_CONNECTION"
+
+      set-option -g renumber-windows on
+
+      bind -n C-M-h previous-window
+      bind -n C-M-l next-window
+
+      set -g @plugin 'aserowy/tmux.nvim'
+      set -g @tmux-nvim-resize-step-x 5
+      set -g @tmux-nvim-resize-step-y 5
+
+      bind-key -T copy-mode-vi v send-keys -X begin-selection
+      bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
+      bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
+
+      bind ";" split-window -h -c "#{pane_current_path}"
+      bind "/" split-window -v -c "#{pane_current_path}"
+    '';
+  };
+
 
   programs.ssh = {
     enable = true;
@@ -187,20 +232,6 @@
   fi
 '';
 
-
-  # tmux
-  home.activation.installTPM = lib.hm.dag.entryAfter [ ]
-    ''
-      # Clone TPM if not already installed
-      if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
-        git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
-      fi
-
-      # Install tmux plugins
-      if command -v tmux >/dev/null 2>&1; then
-        tmux new-session -d -s plugin_installer "tmux source ~/.config/tmux.conf \; run-shell '~/.tmux/plugins/tpm/bindings/install_plugins' && exit"
-      fi
-    '';
 
   # Limiting number of generations
   home.activation.pruneOldGenerations = lib.hm.dag.entryAfter [ "nixos-rebuild" ]

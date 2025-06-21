@@ -1,6 +1,4 @@
 { homeStateVersion, user, pkgs, lib, autenticacao-gov-pt, ... }:
-let terminal = pkgs.kitty;
-in 
 {
 
   nixpkgs.config.allowUnfree = true;
@@ -42,7 +40,7 @@ in
       inter
       iosevka
       jdk
-      terminal
+      kitty
       libsForQt5.okular
       libnotify
       libreoffice
@@ -235,6 +233,43 @@ in
     '';
   };
 
+  # Kitty
+   programs.kitty = {
+    enable = true;
+    settings = {
+      foreground = "#DCD7BA";
+      background = "#1F1F28";
+      color0  = "#16161D";
+      color1  = "#C34043";
+      color2  = "#98BB6C";
+      color3  = "#DCA561";
+      color4  = "#7E9CD8";
+      color5  = "#957FB8";
+      color6  = "#6A9589";
+      color7  = "#DCD7BA";
+      color8  = "#717C7C";
+      color9  = "#E82424";
+      color10 = "#76946A";
+      color11 = "#FF9E3B";
+      color12 = "#658594";
+      color13 = "#938AA9";
+      color14 = "#7AA89F";
+      color15 = "#D27E99";
+      selection_foreground = "#DCA561";
+      selection_background = "#223249";
+      font_size = 15;
+      font_family = "Iosevka, Iosevka Regular, Monospace";
+      bold_font = "Iosevka Bold";
+      italic_font = "Iosevka Italic";
+      bold_italic_font = "Iosevka Bold Italic";
+      confirm_os_window_close = "0";
+      enable_audio_bell = "no";
+    };
+    extraConfig = ''
+      background_opacity 0.95
+    '';
+  };
+
   # i3
   xsession = {
     enable = true;
@@ -249,8 +284,8 @@ in
     activeOpacity = 1.0;
     inactiveOpacity = 1.0;
     opacityRules = [
-      "95:class_g = '${terminal.pname}' && focused"
-      "90:class_g = '${terminal.pname}' && !focused"
+      "95:class_g = '${pkgs.kitty.pname}' && focused"
+      "90:class_g = '${pkgs.kitty.pname}' && !focused"
     ];
     backend = "glx";
     vSync = true;
@@ -265,7 +300,7 @@ in
       blur-background-frame = false;
       blur-background-fixed = true;
       blur-background-exclude = [
-        "window_type = 'desktop' && class_g != '${terminal.pname}'"
+        "window_type = 'desktop' && class_g != '${pkgs.kitty.pname}'"
       ];
       log-level = "warn";
       wintypes = {

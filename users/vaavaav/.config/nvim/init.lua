@@ -100,6 +100,7 @@ require("lazy").setup({
             "--line-number",
             "--column",
             "--smart-case",
+            "--no-ignore",
           }
         },
         pickers = {

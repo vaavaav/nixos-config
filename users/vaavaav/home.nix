@@ -80,6 +80,7 @@
       thunderbird
       typst
       usbutils
+      vagrant
       vpnc
       xclip
       zathura

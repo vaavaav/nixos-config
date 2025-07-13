@@ -1,6 +1,5 @@
 { homeStateVersion, user, pkgs, lib, autenticacao-gov-pt, ... }:
 {
-
   nixpkgs.config.allowUnfree = true;
 
   home = {
@@ -78,6 +77,7 @@
       texlab
       texliveFull
       thunderbird
+      tmux
       typst
       usbutils
       vagrant
@@ -173,6 +173,11 @@
   fi
 '';
 
+  # Tmux Plugin Manager
+  home.file.".tmux/plugins/tpm".source = fetchGit {
+    url = "https://github.com/tmux-plugins/tpm.git";
+    rev = "99469c4a9b1ccf77fade25842dc7bafbc8ce9946"; 
+  };
 
   # Limiting number of generations
   home.activation.pruneOldGenerations = lib.hm.dag.entryAfter [ "nixos-rebuild" ]
@@ -185,51 +190,6 @@
     enable = true;
     viAlias = true;
     vimAlias = true;
-  };
-
-  # Tmux
-  programs.tmux = {
-    enable = true;
-    mouse = true;
-    terminal = "screen-256color";  
-    baseIndex = 1;
-    keyMode = "vi";
-    sensibleOnTop = true;
-    plugins = with pkgs; [
-      tmuxPlugins.yank
-      {
-        plugin = tmuxPlugins.kanagawa;
-        extraConfig = ''
-          set -g @kanagawa-theme 'wave'
-          set -g @kanagawa-show-flags true
-          set -g @kanagawa-show-empty-plugins false
-          set -g @kanagawa-plugins "ssh-session time"
-          set -g @kanagawa-ssh-session-colors "light_purple white"
-          set -g @kanagawa-time-colors "dark_purple white"
-          set -g @kanagawa-time-format "%A %d/%m %I:%M %p"
-          set -g @kanagawa-git-show-remote-status true
-          '';
-      }
-    ];
-    extraConfig = ''
-      set -g update-environment "SSH_ASKPASS SSH_AUTH_SOCK SSH_AGENT_PID SSH_CONNECTION"
-
-      set-option -g renumber-windows on
-
-      bind -n C-M-h previous-window
-      bind -n C-M-l next-window
-
-      set -g @plugin 'aserowy/tmux.nvim'
-      set -g @tmux-nvim-resize-step-x 5
-      set -g @tmux-nvim-resize-step-y 5
-
-      bind-key -T copy-mode-vi v send-keys -X begin-selection
-      bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
-      bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
-
-      bind ";" split-window -h -c "#{pane_current_path}"
-      bind "/" split-window -v -c "#{pane_current_path}"
-    '';
   };
 
   # Kitty

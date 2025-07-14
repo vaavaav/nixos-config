@@ -16,6 +16,7 @@
       arandr
       bash
       bash-language-server
+      bat
       brightnessctl
       cabal-install
       cargo
@@ -67,7 +68,6 @@
       polybarFull
       pylyzer
       python311
-      ranger
       ripgrep
       rofi
       rustc
@@ -87,6 +87,7 @@
       zip
       zoom-us
       zotero
+      zoxide
     ];
   };
 

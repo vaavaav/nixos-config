@@ -53,3 +53,6 @@ fi
 if [[ ! -f "$SSH_AUTH_SOCK" ]]; then
   source "$XDG_RUNTIME_DIR/ssh-agent.env" >/dev/null
 fi
+
+# zoxide integration
+eval "$(zoxide init bash)"

@@ -188,7 +188,7 @@ require("lazy").setup({
       vim.g.vimtex_latexmk_automatic = 1
       vim.g.vimtex_quickfix_enabled = 0
       vim.g.vimtex_syntax_enabled = 0
-      vim.keymap.set("n", "<leader>ls", ':VimtexView<CR>')
+      vim.keymap.set("n", "<leader>lv", ':VimtexView<CR>')
       vim.keymap.set("n", "<leader>lc", ':VimtexCompile<CR>')
     end
   },

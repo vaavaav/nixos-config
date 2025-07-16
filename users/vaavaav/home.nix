@@ -12,8 +12,10 @@
       model = "pc105";
     };
     packages = with pkgs; [
-      autenticacao-gov-pt
       arandr
+      asciinema
+      asciinema-agg
+      autenticacao-gov-pt
       bash
       bash-language-server
       bat
@@ -27,23 +29,23 @@
       drawio
       fd
       feh
-      firefox
       fira-sans
+      firefox
       flameshot
       font-manager
       fzf
       gcc
-      glibc
       glib
+      glibc
       gnumake
       i3
       inter
       iosevka
       jdk
       kitty
-      libsForQt5.okular
       libnotify
       libreoffice
+      libsForQt5.okular
       libtool
       lua-language-server
       man-pages
@@ -51,11 +53,11 @@
       markdown-oxide
       material-design-icons
       mattermost-desktop
-      nerd-fonts.symbols-only
       nerd-fonts.iosevka
-      networkmanagerapplet
+      nerd-fonts.symbols-only
       networkmanager-openvpn
       networkmanager-vpnc
+      networkmanagerapplet
       nil
       nodejs_24
       noisetorch
@@ -71,9 +73,11 @@
       ripgrep
       rofi
       rustc
+      speedtest-cli
       spotify
       stremio
       tdf
+      termshark
       texlab
       texliveFull
       thunderbird
@@ -87,7 +91,6 @@
       zip
       zoom-us
       zotero
-      zoxide
     ];
   };
 

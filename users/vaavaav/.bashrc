@@ -10,9 +10,25 @@ bind 'set enable-bracketed-paste on'              # paste as text not commands
 bind -m vi-command '"?":reverse-search-history'   # reverse search
 bind -m vi-insert '"\eK":history-search-backward' # backwards search
 bind -m vi-insert '"\eJ":history-search-forward'  # forwards search
-export HISTCONTROL=erasedups                      # ignore duplicate commands
+
+# Alias
 alias kys="poweroff"
 alias ls="ls --color=auto"
+
+# Environment Vars
+export HISTCONTROL=erasedups                      # ignore duplicate commands
+export VISUAL="nvim"
+export EDITOR="nvim"
+export TERM="xterm-256color"
+
+# FZF integration
+eval "$(fzf --bash)"
+export FZF_DEFAULT_COMMAND='fd --hidden --exclude .git'
+export FZF_CTRL_T_OPTS='--preview "bat --style=numbers --color=always -n --line-range :500 {}"' 
+export FZF_ALT_T_OPTS='--preview "bat --style=numbers --color=always -n --line-range :500 {}"'
+export FZF_DEFAULT_OPTS='--border --style=minimal'
+bind -x '"\C-f": fzf-file-widget'
+
 
 # Prompt
 PROMPT_DIRTRIM=3
@@ -41,10 +57,6 @@ PS1='\[\e[40m\] \u@\h \[\e[0;30;44m\] \w $( \
         echo "\[\e[0;34m\]"; \
     fi) \[\e[0m\]'
 
-# Environment Vars
-export VISUAL="nvim"
-export EDITOR="nvim"
-export TERM="xterm-256color"
 
 # Start SSH agent automatically
 if ! pgrep -u "$USER" ssh-agent >/dev/null; then
@@ -53,6 +65,3 @@ fi
 if [[ ! -f "$SSH_AUTH_SOCK" ]]; then
   source "$XDG_RUNTIME_DIR/ssh-agent.env" >/dev/null
 fi
-
-# zoxide integration
-eval "$(zoxide init bash)"

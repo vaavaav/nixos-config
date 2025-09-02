@@ -17,6 +17,7 @@ alias ls="ls --color=auto"
 
 # Environment Vars
 export HISTCONTROL=erasedups                      # ignore duplicate commands
+export HISTSIZE=2000                              # number of commands to remember in history
 export VISUAL="nvim"
 export EDITOR="nvim"
 export TERM="xterm-256color"

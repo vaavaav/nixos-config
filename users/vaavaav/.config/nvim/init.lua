@@ -11,6 +11,8 @@ vim.o.expandtab = true                                                         -
 vim.o.hlsearch = true                                                          -- If true, highlight search results
 vim.g.mapleader = "\\"                                                         -- Set leader key
 vim.o.termguicolors = true                                                     -- If true, use 24-bit RGB colors in the terminal
+vim.g.autoread = true                                                          -- If true, automatically read files when they are changed outside of Vim
+vim.o.clipboard = "unnamedplus"                                                -- Use system clipboard
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { noremap = true, silent = true }) -- Exit terminal mode with ESC
 vim.keymap.set("n", "<Esc>", ":noh<Esc>", { silent = true })                   -- Clear search highlights after pressing enter
 vim.keymap.set({ "n", "v" }, "<c-u>", "<c-u>zz")                               -- Center after scrolling up

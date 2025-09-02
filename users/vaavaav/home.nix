@@ -25,6 +25,7 @@
       ccls
       cmake
       cmake-language-server
+      corefonts
       discord
       drawio
       fd
@@ -52,7 +53,6 @@
       man-pages-posix
       markdown-oxide
       material-design-icons
-      mattermost-desktop
       nerd-fonts.iosevka
       nerd-fonts.symbols-only
       networkmanager-openvpn
@@ -74,13 +74,13 @@
       rofi
       rustc
       speedtest-cli
-      spotify
       stremio
       tdf
       termshark
       texlab
       texliveFull
       thunderbird
+      tidal-hifi
       tmux
       typst
       usbutils
@@ -136,10 +136,10 @@
   };
 
   # Blue filter
-  services.sctd = {
-    enable = true;
-    baseTemperature = 3000;
-  };
+#  services.sctd = {
+#    enable = true;
+#    baseTemperature = 3000;
+#  };
 
   # SSH
   programs.ssh = {

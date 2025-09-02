@@ -150,12 +150,16 @@
         hostname = "%h.cluster.lsd.di.uminho.pt";
         identityFile = "/home/${user}/.ssh/cloudinhas";
         forwardAgent = true;
+        forwardX11 = true; # Needed to use clipboard over ssh and GUI apps
+        forwardX11Trusted = true; # Needed to use clipboard over ssh and GUI apps
       };
       "deucalion" = {
         user = "jose.p.peixoto";
         hostname = "login.deucalion.macc.fccn.pt";
         identityFile = "/home/${user}/.ssh/deucalion";
         forwardAgent = true;
+        forwardX11 = true; # Needed to use clipboard over ssh and GUI apps
+        forwardX11Trusted = true; # Needed to use clipboard over ssh and GUI apps
       };
     };
   };

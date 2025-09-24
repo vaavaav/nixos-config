@@ -15,8 +15,17 @@ bindsym $mod+Shift+s exec flameshot gui
 bindsym $mod+t exec picom-trans -c -t
 
 exec --no-startup-id picom
-exec --no-startup-id polybar main
 exec --no-startup-id $wallpaper
+
+# Bar
+bindsym $mod+m bar mode toggle
+bar {
+    status_command    i3status-rs ~/.config/i3status-rust/config.toml
+    position          top
+    mode              dock
+    workspace_buttons yes
+    tray_output       none
+}
 
 # Gaps
 gaps inner 6

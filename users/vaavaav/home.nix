@@ -40,6 +40,7 @@
       glibc
       gnumake
       i3
+      i3status-rust
       inter
       iosevka
       jdk
@@ -67,7 +68,6 @@
       openvpn
       pavucontrol
       playerctl
-      polybarFull
       pylyzer
       python311
       ripgrep
@@ -111,8 +111,8 @@
 
 
   # Dotfiles
-  home.file.".bashrc".source = ./.bashrc;
-  home.file.".bash_profile".source = ./.bash_profile;
+ home.file.".bashrc".source = ./.bashrc;
+ home.file.".bash_profile".source = ./.bash_profile;
   home.file.".config" = {
     source = ./.config;
     recursive = true;
@@ -142,23 +142,29 @@
 #  };
 
   # SSH
+  services.ssh-agent.enable = true;
   programs.ssh = {
     enable = true;
+    addKeysToAgent = "yes"; # Needed to use local ssh keys on remote host
     matchBlocks = {
       "cloud*" = {
         user = "gsd";
         hostname = "%h.cluster.lsd.di.uminho.pt";
-        identityFile = "/home/${user}/.ssh/cloudinhas";
-        forwardAgent = true;
-        forwardX11 = true; # Needed to use clipboard over ssh and GUI apps
+        identityFile = [
+          "/home/${user}/.ssh/cloudinhas"
+        ];
+        forwardAgent = true;      # Needed to use local ssh keys on remote host
+        forwardX11 = true;        # Needed to use clipboard over ssh and GUI apps
         forwardX11Trusted = true; # Needed to use clipboard over ssh and GUI apps
       };
       "deucalion" = {
         user = "jose.p.peixoto";
         hostname = "login.deucalion.macc.fccn.pt";
-        identityFile = "/home/${user}/.ssh/deucalion";
-        forwardAgent = true;
-        forwardX11 = true; # Needed to use clipboard over ssh and GUI apps
+        identityFile = [
+          "/home/${user}/.ssh/deucalion"
+        ];
+        forwardAgent = true;      # Needed to use local ssh keys on remote host
+        forwardX11 = true;        # Needed to use clipboard over ssh and GUI apps
         forwardX11Trusted = true; # Needed to use clipboard over ssh and GUI apps
       };
     };
@@ -200,39 +206,44 @@
     vimAlias = true;
   };
 
-  # Kitty
-   programs.kitty = {
-    enable = true;
-    settings = {
-      foreground = "#DCD7BA";
-      background = "#1F1F28";
-      color0  = "#16161D";
-      color1  = "#C34043";
-      color2  = "#98BB6C";
-      color3  = "#DCA561";
-      color4  = "#7E9CD8";
-      color5  = "#957FB8";
-      color6  = "#6A9589";
-      color7  = "#DCD7BA";
-      color8  = "#717C7C";
-      color9  = "#E82424";
-      color10 = "#76946A";
-      color11 = "#FF9E3B";
-      color12 = "#658594";
-      color13 = "#938AA9";
-      color14 = "#7AA89F";
-      color15 = "#D27E99";
-      selection_foreground = "#DCA561";
-      selection_background = "#223249";
-      font_size = 15;
-      font_family = "Iosevka, Iosevka Regular, Monospace";
-      bold_font = "Iosevka Bold";
-      italic_font = "Iosevka Italic";
-      bold_italic_font = "Iosevka Bold Italic";
-      confirm_os_window_close = "0";
-      enable_audio_bell = "no";
-    };
+programs.kitty = {
+  enable = true;
+  settings = {
+     background = "#272822";
+      foreground = "#f8f8f2";
+      
+      color0 = "#272822";
+      color1 = "#f92672";
+      color2 = "#a6e22e";
+      color3 = "#f4bf75";
+      color4 = "#66d9ef";
+      color5 = "#ae81ff";
+      color6 = "#a1efe4";
+      color7 = "#f8f8f2";
+      
+      color8 = "#75715e";
+      color9 = "#f92672";
+      color10 = "#a6e22e";
+      color11 = "#f4bf75";
+      color12 = "#66d9ef";
+      color13 = "#ae81ff";
+      color14 = "#a1efe4";
+      color15 = "#f9f8f5";
+
+    selection_foreground = "#DCA561";
+    selection_background = "#223249";
+
+    font_size = 15;
+    font_family = "Iosevka, Iosevka Regular, Monospace";
+    bold_font = "Iosevka Bold";
+    italic_font = "Iosevka Italic";
+    bold_italic_font = "Iosevka Bold Italic";
+
+    confirm_os_window_close = "0";
+    enable_audio_bell = "no";
   };
+};
+
 
   # i3
   xsession = {

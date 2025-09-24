@@ -1,0 +1,82 @@
+# i3status-rust configuration file
+# Kanagawa theme — minimal, fresh, no icons
+
+[theme]
+theme = "plain"
+
+[icons]
+icons = "none"
+
+[theme.overrides]
+separator = " | "
+idle_bg = "#1F1F28"
+idle_fg = "#DCD7BA"
+info_bg = "#1F1F28"
+info_fg = "#7E9CD8"
+good_bg = "#1F1F28"
+good_fg = "#76946A"
+warning_bg = "#1F1F28"
+warning_fg = "#C0A36E"
+critical_bg = "#1F1F28"
+critical_fg = "#C34043"
+
+[[block]]
+block = "time"
+interval = 60
+# time block uses strftime-style format strings
+format = " $timestamp.datetime(f:'(%H:%M) %a, %d-%m') "
+
+[[block]]
+block = "net"
+device = "wlp2s0"
+format = " {$ssid $signal_strength.eng(w:0) (D: $speed_down.eng(w:0, prefix_space:true, unit:b)\\ps \\| U: $speed_up.eng(w:0, prefix_space:true, unit:b)\\ps)|Wired connection} "
+format_alt = " {$ssid $signal_strength.eng(w:0) $frequency.eng(w:0)|Wired connection} "
+inactive_format = " No network "
+missing_format = " Unknown net interface "
+[block.theme_overrides]
+idle_fg = "#76946A"
+critical_fg = "#C34043"
+
+[[block]]
+block = "sound"
+format = " {Vol $volume.eng(w:0)|muted} "
+max_vol=150
+[[block.click]]
+button = "left"
+action = "toggle_mute"
+[block.theme_overrides]
+idle_fg = "#C0A36E"
+critical_fg = "#C34043"
+
+[[block]]
+block = "cpu"
+interval = 1
+format = " CPU $utilization.eng(w:0) "
+format_alt = " CPU $utilization.eng(w:0) $frequency.eng(w:0) "
+[block.theme_overrides]
+idle_fg = "#7E9CD8"
+warning_fg = "#C0A36E"
+critical_fg = "#C34043"
+
+[[block]]
+block = "memory"
+format = " Mem $mem_used_percents.eng(w:0) "
+format_alt = " Mem $mem_used.eng(w:0)/$mem_total.eng(w:0) "
+warning_mem = 80
+critical_mem = 90
+[block.theme_overrides]
+idle_fg = "#938AA9"
+warning_fg = "#C0A36E"
+critical_fg = "#C34043"
+
+[[block]]
+block = "disk_space"
+alert = 10.0
+warning = 15.0
+info_type = "available"
+format = " $icon $percentage.eng(w:0) "
+format_alt = " $icon $available.eng(w:0) / $total.eng(w:0) "
+
+[[block]]
+block = "battery"
+format = " $icon $percentage "

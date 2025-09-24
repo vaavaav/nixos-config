@@ -71,11 +71,11 @@ critical_fg = "#C34043"
 
 [[block]]
 block = "disk_space"
-alert = 10.0
-warning = 15.0
-info_type = "available"
+alert = 85.0
+warning = 90.0
+info_type = "used"
 format = " $icon $percentage.eng(w:0) "
-format_alt = " $icon $available.eng(w:0) / $total.eng(w:0) "
+format_alt = " $icon $used.eng(w:0) / $total.eng(w:0) "
 
 [[block]]
 block = "battery"

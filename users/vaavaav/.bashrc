@@ -29,40 +29,83 @@ export FZF_CTRL_T_OPTS='--preview "bat --style=numbers --color=always -n --line-
 export FZF_ALT_T_OPTS='--preview "bat --style=numbers --color=always -n --line-range :500 {}"'
 export FZF_DEFAULT_OPTS='--border --style=minimal'
 bind -x '"\C-f": fzf-file-widget'
+# Colors - Using a cleaner approach
+RED='\[\033[0;31m\]'
+GREEN='\[\033[0;32m\]'
+YELLOW='\[\033[0;33m\]'
+BLUE='\[\033[0;34m\]'
+CYAN='\[\033[0;36m\]'
+WHITE='\[\033[0;37m\]'
+BOLD='\[\033[1m\]'
+RESET='\[\033[0m\]'
+PURPLE='\[\033[0;35m\]'
 
+# Git branch function
+git_branch() {
+    local branch
+    if branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); then
+        if [[ $branch == "HEAD" ]]; then
+            branch=$(git rev-parse --short HEAD 2>/dev/null)
+        fi
+        echo "($branch)"
+    fi
+}
 
-# Prompt
-PROMPT_DIRTRIM=3
-PS1='\[\e[40m\] \u@\h \[\e[0;30;44m\] \w $( \
-    if git rev-parse --git-dir > /dev/null 2>&1; then \
-        if git rev-parse --verify HEAD > /dev/null 2>&1; then \
-            if git symbolic-ref HEAD > /dev/null 2>&1; then \
-                branch_name=$(git rev-parse --abbrev-ref HEAD); \
-            else \
-                branch_name=$(git rev-parse --short HEAD); \
-            fi; \
-        else \
-            branch_name="(no commits)"; \
-        fi; \
-        N=$( \
-            if git diff --quiet && \
-               git diff --cached --quiet && \
-               ! git ls-files --others --exclude-standard | grep . > /dev/null 2>&1; then \
-                echo "2"; \
-            else \
-                echo "3"; \
-            fi; \
-        ); \
-        echo "\[\e[0;34;4${N}m\]\[\e[0;30;4${N}m\] $branch_name \[\e[0;3${N}m\]"; \
-    else \
-        echo "\[\e[0;34m\]"; \
-    fi) \[\e[0m\]'
+# Git status indicator - Returns plain text, coloring handled in PS1
+git_status() {
+    git rev-parse --git-dir >/dev/null 2>&1 || return
+    # Staged changes
+    if ! git diff-index --quiet --cached HEAD --; then
+        echo "staged"
+        return
+    fi
+    # Unstaged changes
+    if ! git diff-files --quiet --ignore-submodules --; then
+        echo "modified"
+        return
+    fi
+    # Untracked files
+    if git ls-files --others --exclude-standard --directory -z | grep -q .; then
+        echo "untracked"
+        return
+    fi
+    # Clean repo
+    echo "clean"
+}
 
+# Custom PS1 - Rebuilt to avoid issues with command substitution
+set_ps1() {
+    local exit_code=$?
+    local status_color
+    local git_info=""
+    local git_stat=""
+    
+    # Get git info
+    if git rev-parse --git-dir >/dev/null 2>&1; then
+        local branch=$(git_branch)
+        local status=$(git_status)
+        
+        if [[ -n "$branch" ]]; then
+            git_info=" ${YELLOW}${branch}${RESET}"
+        fi
+        
+        case "$status" in
+            "staged")   git_stat=" ${YELLOW}●${RESET}" ;;
+            "modified") git_stat=" ${RED}●${RESET}" ;;
+            "untracked") git_stat=" ${RED}●${RESET}" ;;
+            "clean")    git_stat=" ${GREEN}●${RESET}" ;;
+        esac
+    fi
+    
+    # Set status color
+    if [ $exit_code -eq 0 ]; then
+        status_color=$GREEN
+    else
+        status_color=$RED
+    fi
+      
+    # Build PS1 without command substitutions in the prompt itself
+    PS1="${BOLD}${WHITE}[${RESET}${BOLD}${PURPLE}\u${RESET}${BOLD}${WHITE}@${RESET}${BOLD}${GREEN}\h${RESET}${BOLD}${WHITE}]${RESET} ${BOLD}${BLUE}\w${RESET}${git_info}${git_stat}${status_color}${BOLD} \$${RESET} "
+}
 
-# Start SSH agent automatically
-if ! pgrep -u "$USER" ssh-agent >/dev/null; then
-  ssh-agent -t 1h >"$XDG_RUNTIME_DIR/ssh-agent.env"
-fi
-if [[ ! -f "$SSH_AUTH_SOCK" ]]; then
-  source "$XDG_RUNTIME_DIR/ssh-agent.env" >/dev/null
-fi
+PROMPT_COMMAND=set_ps1

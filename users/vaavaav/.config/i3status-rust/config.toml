@@ -80,3 +80,4 @@ format_alt = " $icon $used.eng(w:0) / $total.eng(w:0) "
 [[block]]
 block = "battery"
 format = " $icon $percentage "
+full_format = " $icon $percentage "

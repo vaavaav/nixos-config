@@ -6,7 +6,6 @@
   # System packages
   environment.systemPackages = with pkgs; [
     home-manager
-    bash
     lightdm
     lightdm-gtk-greeter
     linuxHeaders
@@ -76,10 +75,4 @@
 
   # GUI settings
   programs.dconf.enable = true;
-
-  # Steam
-  programs.steam = {
-    enable = true;
-    extraCompatPackages = [pkgs.proton-ge-bin];
-  };
 }

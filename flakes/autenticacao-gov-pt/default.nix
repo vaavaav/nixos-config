@@ -58,7 +58,6 @@ let
     };
   };
 
-
 in
 pkgs.stdenv.mkDerivation rec {
   name = "autenticacao-gov-pt";

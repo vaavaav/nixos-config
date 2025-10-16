@@ -1,7 +1,16 @@
-{ pkgs, stateVersion, hostname, user, ... }:
+{
+  pkgs,
+  stateVersion,
+  hostname,
+  user,
+  ...
+}:
 {
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
   # System packages
   environment.systemPackages = with pkgs; [
@@ -47,7 +56,10 @@
     defaultUserShell = pkgs.bash;
     users.${user} = {
       isNormalUser = true;
-      extraGroups = [ "wheel" "networkmanager" ];
+      extraGroups = [
+        "wheel"
+        "networkmanager"
+      ];
     };
   };
 
@@ -58,7 +70,6 @@
     desktopManager.xterm.enable = true;
     displayManager.lightdm.enable = true;
   };
-
 
   # SSH
   programs.ssh.askPassword = "";

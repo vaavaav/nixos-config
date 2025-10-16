@@ -33,12 +33,13 @@ bind -x '"\C-f": fzf-file-widget'
 RED='\[\033[0;31m\]'
 GREEN='\[\033[0;32m\]'
 YELLOW='\[\033[0;33m\]'
-BLUE='\[\033[0;34m\]'
-CYAN='\[\033[0;36m\]'
 WHITE='\[\033[0;37m\]'
 BOLD='\[\033[1m\]'
 RESET='\[\033[0m\]'
-PURPLE='\[\033[0;35m\]'
+LIGHT_PURPLE='\[\033[1;35m\]'
+LIGHT_CYAN='\[\033[1;36m\]'
+LIGHT_BLUE='\[\033[1;34m\]'
+LIGHT_YELLOW='\[\033[1;33m\]'
 
 # Git branch function
 git_branch() {
@@ -86,7 +87,7 @@ set_ps1() {
         local status=$(git_status)
         
         if [[ -n "$branch" ]]; then
-            git_info=" ${YELLOW}${branch}${RESET}"
+            git_info=" ${LIGHT_YELLOW}${branch}${RESET}"
         fi
         
         case "$status" in
@@ -105,7 +106,7 @@ set_ps1() {
     fi
       
     # Build PS1 without command substitutions in the prompt itself
-    PS1="${BOLD}${WHITE}[${RESET}${BOLD}${PURPLE}\u${RESET}${BOLD}${WHITE}@${RESET}${BOLD}${GREEN}\h${RESET}${BOLD}${WHITE}]${RESET} ${BOLD}${BLUE}\w${RESET}${git_info}${git_stat}${status_color}${BOLD} \$${RESET} "
+    PS1="${BOLD}${WHITE}[${RESET}${BOLD}${LIGHT_PURPLE}\u${RESET}${BOLD}${WHITE}@${RESET}${BOLD}${LIGHT_CYAN}\h${RESET}${BOLD}${WHITE}]${RESET} ${BOLD}${LIGHT_BLUE}\w${RESET}${git_info}${git_stat}${status_color}${BOLD} \$${RESET} "
 }
 
 PROMPT_COMMAND=set_ps1

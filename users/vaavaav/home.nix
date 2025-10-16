@@ -1,4 +1,11 @@
-{ homeStateVersion, user, pkgs, lib, autenticacao-gov-pt, ... }:
+{
+  homeStateVersion,
+  user,
+  pkgs,
+  lib,
+  autenticacao-gov-pt,
+  ...
+}:
 {
   nixpkgs.config.allowUnfree = true;
 
@@ -35,10 +42,12 @@
       flameshot
       font-manager
       fzf
+      gammastep
       gcc
       glib
       glibc
       gnumake
+      haskell-language-server
       i3
       i3status-rust
       inter
@@ -49,6 +58,7 @@
       libreoffice
       libsForQt5.okular
       libtool
+      ltex-ls
       lua-language-server
       man-pages
       man-pages-posix
@@ -60,6 +70,7 @@
       networkmanager-vpnc
       networkmanagerapplet
       nil
+      nixfmt-rfc-style
       nodejs_24
       noisetorch
       noto-fonts
@@ -68,19 +79,26 @@
       openvpn
       pavucontrol
       playerctl
-      pylyzer
-      python311
+      (python3.withPackages (
+        ps: with ps; [
+          black
+          isort
+          python-lsp-server
+          python-lsp-black
+          pyls-isort
+        ]
+      ))
       ripgrep
       rofi
       rustc
       speedtest-cli
+      spotify
       stremio
       tdf
       termshark
       texlab
       texliveFull
       thunderbird
-      tidal-hifi
       tmux
       typst
       usbutils
@@ -109,15 +127,13 @@
     recursive = true;
   };
 
-
   # Dotfiles
- home.file.".bashrc".source = ./.bashrc;
- home.file.".bash_profile".source = ./.bash_profile;
+  home.file.".bashrc".source = ./.bashrc;
+  home.file.".bash_profile".source = ./.bash_profile;
   home.file.".config" = {
     source = ./.config;
     recursive = true;
   };
-
 
   # GUI settings
   gtk = {
@@ -136,10 +152,10 @@
   };
 
   # Blue filter
-#  services.sctd = {
-#    enable = true;
-#    baseTemperature = 3000;
-#  };
+  #  services.sctd = {
+  #    enable = true;
+  #    baseTemperature = 3000;
+  #  };
 
   # SSH
   services.ssh-agent.enable = true;
@@ -153,8 +169,8 @@
         identityFile = [
           "/home/${user}/.ssh/cloudinhas"
         ];
-        forwardAgent = true;      # Needed to use local ssh keys on remote host
-        forwardX11 = true;        # Needed to use clipboard over ssh and GUI apps
+        forwardAgent = true; # Needed to use local ssh keys on remote host
+        forwardX11 = true; # Needed to use clipboard over ssh and GUI apps
         forwardX11Trusted = true; # Needed to use clipboard over ssh and GUI apps
       };
       "deucalion" = {
@@ -163,41 +179,40 @@
         identityFile = [
           "/home/${user}/.ssh/deucalion"
         ];
-        forwardAgent = true;      # Needed to use local ssh keys on remote host
-        forwardX11 = true;        # Needed to use clipboard over ssh and GUI apps
+        forwardAgent = true; # Needed to use local ssh keys on remote host
+        forwardX11 = true; # Needed to use clipboard over ssh and GUI apps
         forwardX11Trusted = true; # Needed to use clipboard over ssh and GUI apps
       };
     };
   };
 
-  # VPN 
-  home.activation.createUminhoVPN = lib.hm.dag.entryAfter ["networking"] ''
-  if ! ${pkgs.networkmanager}/bin/nmcli connection show "uminho-vpn" &>/dev/null; then
-    echo "Creating 'uminho-vpn' connection via nmcli..."
+  # VPN
+  home.activation.createUminhoVPN = lib.hm.dag.entryAfter [ "networking" ] ''
+    if ! ${pkgs.networkmanager}/bin/nmcli connection show "uminho-vpn" &>/dev/null; then
+      echo "Creating 'uminho-vpn' connection via nmcli..."
 
-    ${pkgs.networkmanager}/bin/nmcli connection add type vpn \
-      con-name "uminho-vpn" \
-      ifname -- \
-      vpn-type vpnc \
-      vpn.service-type org.freedesktop.NetworkManager.vpnc \
-      vpn.data "IPSec gateway=vpn.uminho.pt,IPSec ID=geral,Xauth username=d14110@di.uminho.pt" \
-      vpn.secrets "IPSec secret=geral"
-  else
-    echo "'uminho-vpn' connection already exists."
-  fi
-'';
+      ${pkgs.networkmanager}/bin/nmcli connection add type vpn \
+        con-name "uminho-vpn" \
+        ifname -- \
+        vpn-type vpnc \
+        vpn.service-type org.freedesktop.NetworkManager.vpnc \
+        vpn.data "IPSec gateway=vpn.uminho.pt,IPSec ID=geral,Xauth username=d14110@di.uminho.pt" \
+        vpn.secrets "IPSec secret=geral"
+    else
+      echo "'uminho-vpn' connection already exists."
+    fi
+  '';
 
   # Tmux Plugin Manager
   home.file.".tmux/plugins/tpm".source = fetchGit {
     url = "https://github.com/tmux-plugins/tpm.git";
-    rev = "99469c4a9b1ccf77fade25842dc7bafbc8ce9946"; 
+    rev = "99469c4a9b1ccf77fade25842dc7bafbc8ce9946";
   };
 
   # Limiting number of generations
-  home.activation.pruneOldGenerations = lib.hm.dag.entryAfter [ "nixos-rebuild" ]
-    ''
-      nix-env --delete-generations '+4'
-    '';
+  home.activation.pruneOldGenerations = lib.hm.dag.entryAfter [ "nixos-rebuild" ] ''
+    nix-env --delete-generations '+4'
+  '';
 
   # Nvim
   programs.neovim = {
@@ -206,44 +221,60 @@
     vimAlias = true;
   };
 
-programs.kitty = {
-  enable = true;
-  settings = {
-     background = "#272822";
-      foreground = "#f8f8f2";
-      
-      color0 = "#272822";
-      color1 = "#f92672";
-      color2 = "#a6e22e";
-      color3 = "#f4bf75";
-      color4 = "#66d9ef";
-      color5 = "#ae81ff";
-      color6 = "#a1efe4";
-      color7 = "#f8f8f2";
-      
-      color8 = "#75715e";
-      color9 = "#f92672";
-      color10 = "#a6e22e";
-      color11 = "#f4bf75";
-      color12 = "#66d9ef";
-      color13 = "#ae81ff";
-      color14 = "#a1efe4";
-      color15 = "#f9f8f5";
+  programs.kitty = {
+    enable = true;
+    settings = {
+      background = "#1F1F28";
+      foreground = "#DCD7BA";
 
-    selection_foreground = "#DCA561";
-    selection_background = "#223249";
+      color0 = "#16161D";
+      color1 = "#C34043";
+      color2 = "#76946A";
+      color3 = "#C0A36E";
+      color4 = "#7E9CD8";
+      color5 = "#957FB8";
+      color6 = "#6A9589";
+      color7 = "#C8C093";
 
-    font_size = 15;
-    font_family = "Iosevka, Iosevka Regular, Monospace";
-    bold_font = "Iosevka Bold";
-    italic_font = "Iosevka Italic";
-    bold_italic_font = "Iosevka Bold Italic";
+      color8 = "#727169";
+      color9 = "#E82424";
+      color10 = "#98BB6C";
+      color11 = "#E6C384";
+      color12 = "#7FB4CA";
+      color13 = "#938AA9";
+      color14 = "#7AA89F";
+      color15 = "#DCD7BA";
 
-    confirm_os_window_close = "0";
-    enable_audio_bell = "no";
+      # extended colors
+      color16 = "#FFA066";
+      color17 = "#FF5D62";
+
+      selection_foreground = "#C8C093";
+      selection_background = "#2D4F67";
+
+      url_color = "#72A7BC";
+      cursor = "#C8C093";
+
+      # Padding
+      window_padding_width = 4;
+
+      # Tabs
+      active_tab_background = "#1F1F28";
+      active_tab_foreground = "#C8C093";
+      inactive_tab_background = "#1F1F28";
+      inactive_tab_foreground = "#727169";
+      # tab_bar_background = "#15161E";
+
+      font_size = 15;
+      font_family = "Iosevka, Iosevka Regular, Monospace";
+      bold_font = "Iosevka Bold";
+      italic_font = "Iosevka Italic";
+      bold_italic_font = "Iosevka Bold Italic";
+
+      confirm_os_window_close = "0";
+      enable_audio_bell = "no";
+    };
   };
-};
-
 
   # i3
   xsession = {
@@ -255,7 +286,10 @@ programs.kitty = {
   services.picom = {
     enable = true;
     fade = true;
-    fadeSteps = [ 0.03 0.03 ];
+    fadeSteps = [
+      0.03
+      0.03
+    ];
     activeOpacity = 1.0;
     inactiveOpacity = 1.0;
     opacityRules = [

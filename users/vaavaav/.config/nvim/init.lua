@@ -48,7 +48,7 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
       { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
       { out,                            "WarningMsg" },
       { "\nPress any key to exit..." },
-    }, true, {})
+    }, true)
     vim.fn.getchar()
     os.exit(1)
   end
@@ -194,58 +194,59 @@ require("lazy").setup({
       vim.keymap.set("n", "<leader>lc", ':VimtexCompile<CR>')
     end
   },
-  -- LSP
+
   {
-    "VonHeikemen/lsp-zero.nvim",
-    branch = "v4.x",
-    dependencies = {
-      -- LSP Support
-      { "neovim/nvim-lspconfig" },
-
-      -- Copilot
-      {
-        "github/copilot.vim",
-        config = function()
-          vim.g.copilot_no_tab_map = true
-          vim.g.copilot_enabled = true
-          vim.keymap.set("i", "<C-l>", 'copilot#Accept("<CR>")',
-            { silent = true, expr = true, replace_keycodes = false })
-          vim.keymap.set("i", "<C-;>", 'copilot#AcceptLine("<CR>")',
-            { silent = true, expr = true, replace_keycodes = false })
-          vim.keymap.set('', "<leader>tc", function()
-              vim.g.copilot_enabled = not vim.g.copilot_enabled
-              vim.notify('Copilot ' .. (vim.g.copilot_enabled and 'enabled' or 'disabled'), 'info')
-            end,
-            { noremap = true, silent = true })
-        end,
-      },
-
-      -- Snippets
-      { "L3MON4D3/LuaSnip" },
-
-      -- Auto-completion
-      { "hrsh7th/nvim-cmp" },
-      { "hrsh7th/cmp-nvim-lsp" },
-      { "hrsh7th/cmp-buffer" },
-      { "hrsh7th/cmp-path" },
-      { "saadparwaiz1/cmp_luasnip" },
-      { "hrsh7th/cmp-nvim-lua" },
-    },
+    "github/copilot.vim",
     config = function()
-      local lsp_zero = require('lsp-zero')
-
-      local lsp_attach = function(_, bufnr)
-        lsp_zero.default_keymaps({ buffer = bufnr, perserve_mappings = false })
-      end
-
-      lsp_zero.extend_lspconfig({
-        lsp_attach = lsp_attach,
-        set_lsp_keymaps = true,
+      vim.g.copilot_no_tab_map = true
+      vim.g.copilot_enabled = true
+      vim.keymap.set("i", "<C-l>", 'copilot#Accept("<CR>")',
+        { silent = true, expr = true, replace_keycodes = false })
+      vim.keymap.set("i", "<C-;>", 'copilot#AcceptLine("<CR>")',
+        { silent = true, expr = true, replace_keycodes = false })
+      vim.keymap.set('', "<leader>tc", function()
+          vim.g.copilot_enabled = not vim.g.copilot_enabled
+          vim.notify('Copilot ' .. (vim.g.copilot_enabled and 'enabled' or 'disabled'), 'info')
+        end,
+        { noremap = true, silent = true })
+    end,
+  },
+  -- LSP and completion
+  { "L3MON4D3/LuaSnip" },
+  { "hrsh7th/nvim-cmp" },
+  { "hrsh7th/cmp-nvim-lsp" },
+  { "hrsh7th/cmp-buffer" },
+  { "hrsh7th/cmp-path" },
+  { "saadparwaiz1/cmp_luasnip" },
+  { "hrsh7th/cmp-nvim-lua" },
+  {
+    "neovim/nvim-lspconfig",
+    config = function()
+      vim.lsp.enable({ 'ccls', 'lua_ls', 'cmake', 'bashls', 'pylsp', 'nil_ls', 'ltex', 'hls' })
+      vim.lsp.config('pylsp', {
+        settings = {
+          pylsp = {
+            plugins = {
+              black = { enabled = true },
+              isort = { enabled = true },
+              pycodestyle = { enabled = false },
+              mccabe = { enabled = false },
+              pyflakes = { enabled = false },
+              yapf = { enabled = false },
+              autopep8 = { enabled = false },
+            }
+          }
+        }
       })
-
-      for _, server in ipairs({ 'ccls', 'lua_ls', 'texlab', 'rust_analyzer', 'nil_ls', 'cmake', 'bashls', 'pylyzer', 'markdown_oxide' }) do
-        require('lspconfig')[server].setup {}
-      end
+      vim.lsp.config('nil_ls', {
+        settings = {
+          ['nil'] = {
+            formatting = {
+              command = { "nixfmt" },
+            },
+          },
+        },
+      })
 
       local cmp = require('cmp')
 
@@ -293,4 +294,5 @@ require("lazy").setup({
       })
     end,
   },
+
 })

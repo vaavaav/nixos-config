@@ -21,6 +21,11 @@ critical_bg = "#1F1F28"
 critical_fg = "#C34043"
 
 [[block]]
+block = "music"
+player = "spotify"
+format = "{ $combo.str(max_w:45,rot_interval:0.5,rot_separator:'     ') |}"
+
+[[block]]
 block = "time"
 interval = 60
 # time block uses strftime-style format strings

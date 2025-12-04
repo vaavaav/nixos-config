@@ -19,49 +19,43 @@
     }@inputs:
     let
       system = "x86_64-linux";
-      users = [
-        "vaavaav"
-      ];
-      hosts = [
-        "desktop"
-        "E16"
-      ];
-      homeStateVersion = "25.11";
-      stateVersion = "25.11";
     in
     {
-      nixosConfigurations = nixpkgs.lib.foldl' (
-        configs: hostname:
-        configs
-        // {
-          "${hostname}" = nixpkgs.lib.nixosSystem {
-            system = system;
-            specialArgs = {
-              inherit inputs hostname stateVersion;
-            };
-            modules = [
-              ./hosts/${hostname}/configuration.nix
-            ];
+      nixosConfigurations = {
+        "E16" = nixpkgs.lib.nixosSystem {
+          system = system;
+          specialArgs = {
+            inherit inputs;
           };
-        }
-      ) { } hosts;
+          modules = [
+            ./hosts/E16/configuration.nix
+          ];
+        };
 
-      homeConfigurations = nixpkgs.lib.foldl' (
-        configs: username:
-        configs
-        // {
-          "${username}" = home-manager.lib.homeManagerConfiguration {
-            pkgs = nixpkgs.legacyPackages.${system};
-            extraSpecialArgs = {
-              inherit inputs homeStateVersion;
-            };
-
-            modules = [
-              ./users/${username}/home.nix
-            ];
+        "desktop" = nixpkgs.lib.nixosSystem {
+          system = system;
+          specialArgs = {
+            inherit inputs;
           };
-        }
-      ) { } users;
+          modules = [
+            ./hosts/desktop/configuration.nix
+          ];
+        };
 
+      };
+
+      homeConfigurations = {
+        "vaavaav" = home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages.${system};
+          extraSpecialArgs = {
+            inherit inputs;
+          };
+
+          modules = [
+            ./users/vaavaav/home.nix
+          ];
+        };
+
+      };
     };
 }

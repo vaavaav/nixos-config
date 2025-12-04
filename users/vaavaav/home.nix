@@ -1,11 +1,10 @@
 {
-  homeStateVersion,
   pkgs,
   lib,
   ...
 }:
 let
-  username  = "vaavaav";
+  username = "vaavaav";
   homeDirectory = "/home/${username}";
   ghostscript-fonts = import ./../../flakes/ghostscript-fonts/default.nix { inherit pkgs lib; };
 in
@@ -15,7 +14,7 @@ in
   home = {
     username = username;
     homeDirectory = homeDirectory;
-    stateVersion = homeStateVersion;
+    stateVersion = "25.11";
     keyboard = {
       layout = "us";
       variant = "intl";

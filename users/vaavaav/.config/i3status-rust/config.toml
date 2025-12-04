@@ -21,9 +21,38 @@ critical_bg = "#1F1F28"
 critical_fg = "#C34043"
 
 [[block]]
-block = "music"
-player = "spotify"
-format = "{ $combo.str(max_w:45,rot_interval:0.5,rot_separator:'     ') |}"
+block = "custom"
+format = "{ $text.str(max_w:45,rot_interval:0.5,rot_separator:' ~ ') |}"
+hide_when_empty = true
+interval = 1
+json = true
+command = '''
+PLAYER="spotify"
+status=$(playerctl -p $PLAYER status 2>/dev/null | sed 's/"/\\\"/g')
+artist=$(playerctl -p $PLAYER metadata artist 2>/dev/null | sed 's/"/\\\"/g')
+title=$(playerctl -p $PLAYER metadata title 2>/dev/null | sed 's/"/\\\"/g')
+
+text="$title"
+if [[ -n "$artist" ]]; then
+    text="$artist - $title"
+else 
+    album=$(playerctl -p $PLAYER metadata album 2>/dev/null)
+    if [[ -n "$album" ]]; then
+        text="$album - $title"
+    fi
+fi
+
+state="idle"
+if [[ "$status" == "Playing" ]]; then
+    state="info"
+fi
+
+echo "{\"text\":\"$text\",\"state\":\"$state\"}"
+'''
+click = [
+  {button = "left", cmd = "bash -c 'playerctl metadata url 2>/dev/null | xclipboard -selection clipboard'"}
+]
+
 
 [[block]]
 block = "time"

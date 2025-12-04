@@ -1,17 +1,20 @@
 {
   homeStateVersion,
-  user,
   pkgs,
   lib,
-  autenticacao-gov-pt,
   ...
 }:
+let
+  username  = "vaavaav";
+  homeDirectory = "/home/${username}";
+  ghostscript-fonts = import ./../../flakes/ghostscript-fonts/default.nix { inherit pkgs lib; };
+in
 {
   nixpkgs.config.allowUnfree = true;
 
   home = {
-    username = user;
-    homeDirectory = "/home/${user}";
+    username = username;
+    homeDirectory = homeDirectory;
     stateVersion = homeStateVersion;
     keyboard = {
       layout = "us";
@@ -22,7 +25,7 @@
       arandr
       asciinema
       asciinema-agg
-      autenticacao-gov-pt
+      autenticacao-gov-pt-bin
       bash
       bash-language-server
       bat
@@ -47,6 +50,7 @@
       glib
       glibc
       gnumake
+      ghostscript-fonts
       haskell-language-server
       i3
       i3status-rust
@@ -54,9 +58,9 @@
       iosevka
       jdk
       kitty
+      libertinus
       libnotify
       libreoffice
-      libsForQt5.okular
       libtool
       ltex-ls
       lua-language-server
@@ -64,6 +68,7 @@
       man-pages-posix
       markdown-oxide
       material-design-icons
+      mullvad-vpn
       nerd-fonts.iosevka
       nerd-fonts.symbols-only
       networkmanager-openvpn
@@ -72,7 +77,6 @@
       nil
       nixfmt-rfc-style
       nodejs_24
-      noisetorch
       noto-fonts
       obsidian
       openssl
@@ -93,8 +97,9 @@
       rustc
       speedtest-cli
       spotify
-      stremio
+      #stremio
       tdf
+      teams-for-linux
       termshark
       texlab
       texliveFull
@@ -146,9 +151,13 @@
   # Git
   programs.git = {
     enable = true;
-    userName = "vaavaav";
-    userEmail = "the.jprp@gmail.com";
-    extraConfig.init.defaultBranch = "main";
+    settings = {
+      user = {
+        name = "vaavaav";
+        email = "the.jprp@gmail.com";
+      };
+      init.defaultBranch = "main";
+    };
   };
 
   # Blue filter
@@ -161,13 +170,25 @@
   services.ssh-agent.enable = true;
   programs.ssh = {
     enable = true;
-    addKeysToAgent = "yes"; # Needed to use local ssh keys on remote host
+    enableDefaultConfig = false;
     matchBlocks = {
+      "*" = {
+        forwardAgent = false;
+        addKeysToAgent = "yes";
+        compression = false;
+        serverAliveInterval = 0;
+        serverAliveCountMax = 3;
+        hashKnownHosts = false;
+        userKnownHostsFile = "~/.ssh/known_hosts";
+        controlMaster = "no";
+        controlPath = "~/.ssh/master-%r@%n:%p";
+        controlPersist = "no";
+      };
       "cloud*" = {
         user = "gsd";
         hostname = "%h.cluster.lsd.di.uminho.pt";
         identityFile = [
-          "/home/${user}/.ssh/cloudinhas"
+          "${homeDirectory}/.ssh/cloudinhas"
         ];
         forwardAgent = true; # Needed to use local ssh keys on remote host
         forwardX11 = true; # Needed to use clipboard over ssh and GUI apps
@@ -177,7 +198,7 @@
         user = "jose.p.peixoto";
         hostname = "login.deucalion.macc.fccn.pt";
         identityFile = [
-          "/home/${user}/.ssh/deucalion"
+          "${homeDirectory}/.ssh/deucalion"
         ];
         forwardAgent = true; # Needed to use local ssh keys on remote host
         forwardX11 = true; # Needed to use clipboard over ssh and GUI apps

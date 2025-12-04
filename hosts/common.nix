@@ -2,7 +2,6 @@
   pkgs,
   stateVersion,
   hostname,
-  user,
   ...
 }:
 {
@@ -54,11 +53,12 @@
   # Users
   users = {
     defaultUserShell = pkgs.bash;
-    users.${user} = {
+    users."vaavaav" = {
       isNormalUser = true;
       extraGroups = [
         "wheel"
         "networkmanager"
+        "lp"
       ];
     };
   };

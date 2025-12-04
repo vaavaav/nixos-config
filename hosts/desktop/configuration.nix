@@ -2,11 +2,8 @@
   pkgs,
   stateVersion,
   hostname,
-  user,
-  lib,
   ...
 }:
-
 {
   imports = [
     ./../common.nix
@@ -26,8 +23,7 @@
 
   # System packages
   nixpkgs.config.allowUnfree = true;
-  environment.systemPackages = with pkgs; [
-  ];
 
-  users.users.${user}.extraGroups = [ "lp" ];
+  users.users."vaavaav".extraGroups = [ "lp" ];
+
 }

@@ -2,8 +2,6 @@
   pkgs,
   stateVersion,
   hostname,
-  user,
-  lib,
   ...
 }:
 
@@ -64,9 +62,13 @@
       openFirewall = true;
     };
   };
-  users.users.${user}.extraGroups = [ "lp" ];
+
+  users.users."vaavaav".extraGroups = [ "lp" ];
 
   # Printing
   programs.system-config-printer.enable = true;
+
+  # VPN
+  services.mullvad-vpn.enable = true;
 
 }

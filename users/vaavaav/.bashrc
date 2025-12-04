@@ -13,6 +13,7 @@ bind -m vi-insert '"\eJ":history-search-forward'  # forwards search
 
 # Alias
 alias kys="poweroff"
+alias die="poweroff"
 alias ls="ls --color=auto"
 
 # Environment Vars
@@ -22,13 +23,6 @@ export VISUAL="nvim"
 export EDITOR="nvim"
 export TERM="xterm-256color"
 
-# FZF integration
-eval "$(fzf --bash)"
-export FZF_DEFAULT_COMMAND='fd --hidden --exclude .git'
-export FZF_CTRL_T_OPTS='--preview "bat --style=numbers --color=always -n --line-range :500 {}"' 
-export FZF_ALT_T_OPTS='--preview "bat --style=numbers --color=always -n --line-range :500 {}"'
-export FZF_DEFAULT_OPTS='--border --style=minimal'
-bind -x '"\C-f": fzf-file-widget'
 # Colors - Using a cleaner approach
 RED='\[\033[0;31m\]'
 GREEN='\[\033[0;32m\]'

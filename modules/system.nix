@@ -42,8 +42,6 @@
     fastfetch
     git
     home-manager
-    lightdm
-    lightdm-gtk-greeter
     linuxHeaders
     man
     man-pages
@@ -55,9 +53,6 @@
     usbutils
     vim
     wget
-    xinit
-    xorg-server
-    xwininfo
   ];
 
   # brightnessctl needs its udev rule installed to grant the `video` group
@@ -99,18 +94,16 @@
     };
   };
 
-  # Display and window manager
-  services.displayManager.defaultSession = "xterm";
-  services.xserver = {
+  # Compositor
+  programs.niri = {
     enable = true;
-    desktopManager.xterm.enable = true;
-    displayManager.lightdm = {
-      enable = true;
-      background = ../assets/background.png;
-      greeters.gtk.extraConfig = ''
-        font-name = Inter 11
-      '';
-    };
+  };
+  services.gnome.gcr-ssh-agent.enable = false;
+
+  services.greetd = {
+    enable = true;
+    useTextGreeter = true;
+    settings.default_session.command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd niri-session";
   };
 
   # SSH
@@ -122,10 +115,10 @@
   # System fonts
   fonts = {
     packages = with pkgs; [
-      inter
+      geist-font
     ];
     fontconfig.defaultFonts = {
-      sansSerif = [ "Inter" ];
+      sansSerif = [ "Geist" ];
     };
   };
 

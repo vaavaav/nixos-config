@@ -2,6 +2,7 @@
 {
   programs.kitty = {
     enable = true;
+    shellIntegration.mode = "no-cursor";
     settings = {
       background = "#1F1F28";
       foreground = "#DCD7BA";
@@ -32,7 +33,7 @@
       active_tab_foreground = "#C8C093";
       inactive_tab_background = "#1F1F28";
       inactive_tab_foreground = "#727169";
-      font_size = 12;
+      font_size = 14;
       font_family = "Iosevka, Iosevka Regular, Monospace";
       bold_font = "Iosevka Bold";
       italic_font = "Iosevka Italic";

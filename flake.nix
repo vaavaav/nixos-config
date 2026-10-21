@@ -12,24 +12,23 @@
     let
       system = "x86_64-linux";
 
-      mkHost =
-        hostname: users:
+      mkSystem =
+        desktop: hostname: users:
         let
           importUser =
             user:
             let
-              path = ./users/${user};
+              path = ./users/${user}/${if desktop then "desktop.nix" else "cli.nix"};
             in
             if builtins.pathExists path then
               import path
             else
-              throw "Host '${hostname}' references unknown user '${user}'. Create users/${user}/default.nix to define them.";
+              throw "Host '${hostname}' references unknown user '${user}'. Create ${toString path} to define them.";
         in
         nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = { inherit inputs hostname; };
-          modules = [
-            ./modules/system.nix
+          modules = nixpkgs.lib.optional desktop ./modules/system.nix ++ [
             ./hosts/${hostname}/configuration.nix
             home-manager.nixosModules.home-manager
             {
@@ -46,13 +45,17 @@
             }
           ];
         };
+
+      mkDesktop = mkSystem true;
+      mkServer = mkSystem false;
     in
     {
       nixosConfigurations = {
-        E16 = mkHost "E16" [ "zezocas" ];
-        pixa = mkHost "pixa" [ "zezocas" ];
-        cacete = mkHost "cacete" [ "zezocas" ];
-        X260 = mkHost "X260" [ "zezocas" ];
+        E16 = mkDesktop "E16" [ "zezocas" ];
+        pixa = mkDesktop "pixa" [ "zezocas" ];
+        cacete = mkDesktop "cacete" [ "zezocas" ];
+        X260 = mkDesktop "X260" [ "zezocas" ];
+        rata = mkServer "rata" [ "zezocas" ];
       };
     };
 }

@@ -35,8 +35,24 @@
   };
 
   dconf.settings = {
-    "org/gnome/nautilus/preferences".default-folder-viewer = "list-view";
+    "org/gnome/nautilus/preferences" = {
+      default-folder-viewer = "list-view";
+      default-sort-order = "modification-date";
+      default-sort-in-reverse-order = true;
+    };
     "org/gnome/nautilus/list-view".default-zoom-level = "small";
-    "org/gtk/gtk4/settings/file-chooser".view-type = "list";
+
+    "org/gtk/settings/file-chooser" = {
+      sort-column = "modified";
+      sort-order = "descending";
+      sort-directories-first = false;
+    };
+
+    "org/gtk/gtk4/settings/file-chooser" = {
+      sort-column = "modified";
+      sort-order = "descending";
+      sort-directories-first = false;
+      view-type = "list";
+    };
   };
 }

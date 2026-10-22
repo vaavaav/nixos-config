@@ -68,10 +68,19 @@
   networking.hostName = hostname;
   networking.networkmanager = {
     enable = true;
+    dns = "systemd-resolved";
     plugins = with pkgs; [
       networkmanager-vpnc
       networkmanager-openvpn
     ];
+  };
+
+  # Split DNS: per-link resolvers + routing domains so VPN DNS only handles
+  # the VPN's domains while Cloudflare handles everything else.
+  services.resolved = {
+    enable = true;
+    dnssec = "allow-downgrade";
+    fallbackDns = [ "1.1.1.1" "1.0.0.1" "2606:4700:4700::1111" "2606:4700:4700::1001" ];
   };
 
   # Sound

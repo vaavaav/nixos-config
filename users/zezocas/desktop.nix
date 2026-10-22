@@ -37,6 +37,7 @@ in
     gcc
     gimp
     gnumake
+    ghostscript
     ghostscript-fonts
     imv
     inkscape
@@ -91,4 +92,15 @@ in
       recursive = true;
     };
   };
+
+  # Force the GTK portal backend for FileChooser — the GNOME backend ignores
+  # the GTK4 dconf sort settings, the GTK one respects them.
+  xdg.configFile."xdg-desktop-portal/niri-portals.conf".text = ''
+    [preferred]
+    default=gnome;gtk
+    org.freedesktop.impl.portal.FileChooser=gtk
+    org.freedesktop.impl.portal.Access=gtk
+    org.freedesktop.impl.portal.Notification=gtk
+    org.freedesktop.impl.portal.Secret=gnome-keyring
+  '';
 }

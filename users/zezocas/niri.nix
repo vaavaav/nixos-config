@@ -1,9 +1,13 @@
 { pkgs, ... }:
 let
   random-wallpaper = pkgs.writeShellScriptBin "random-wallpaper" ''
-    img=$(find ~/.wallpapers -type f | shuf -n 1)
-    pkill -x swaybg
-    exec swaybg -m fill -i "$img"
+    img=$(find ~/.wallpapers -maxdepth 1 -type f | shuf -n 1)
+    [ -z "$img" ] && exit 1
+    for _i in $(seq 20); do
+      ${pkgs.awww}/bin/awww query 2>/dev/null && break
+      sleep 0.5
+    done
+    ${pkgs.awww}/bin/awww img --transition-type none "$img"
   '';
 
   fuzzel-run = pkgs.writeShellScriptBin "fuzzel-run" ''
@@ -27,7 +31,7 @@ let
 in
 {
   home.packages = with pkgs; [
-    swaybg
+    awww
     wl-clipboard
     xwayland-satellite
     playerctl
@@ -83,6 +87,7 @@ in
 
     environment {
         NIXOS_OZONE_WL "1"
+        QT_QPA_PLATFORMTHEME "xdgdesktopportal"
     }
 
     cursor {
@@ -97,11 +102,6 @@ in
 
     spawn-at-startup "waybar"
     spawn-at-startup "random-wallpaper"
-
-    layer-rule {
-        match namespace="^wallpaper$"
-        place-within-backdrop true
-    }
 
     layer-rule {
         match namespace="^(waybar|launcher|notifications)$"
@@ -146,7 +146,7 @@ in
         Mod+Return { spawn "kitty"; }
         Mod+D { spawn "fuzzel"; }
         Mod+Shift+D { spawn "fuzzel-run"; }
-        Mod+B { spawn "random-wallpaper"; }
+        Mod+B repeat=false { spawn "random-wallpaper"; }
         Mod+Shift+S { spawn "screenshot"; }
         Print { spawn "screenshot"; }
         Mod+T { toggle-window-rule-opacity; }
@@ -237,4 +237,20 @@ in
         Mod+BracketRight { spawn-sh "playerctl -p spotify next"; }
     }
   '';
+
+  systemd.user.services.awww-daemon = {
+    Unit = {
+      Description = "awww wallpaper daemon";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStartPre = "-${pkgs.bash}/bin/bash -c 'rm -f %t/*-awww-daemon.sock'";
+      ExecStart = "${pkgs.awww}/bin/awww-daemon";
+      Restart = "on-failure";
+      RestartSec = "2s";
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
+
 }

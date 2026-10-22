@@ -21,7 +21,15 @@
       nixfmt
       ltex-ls
       haskell-language-server
-      (python3.withPackages (ps: with ps; [ black isort python-lsp-server python-lsp-black pyls-isort ]))
+      (python3.withPackages (
+        ps: with ps; [
+          black
+          isort
+          python-lsp-server
+          python-lsp-black
+          pyls-isort
+        ]
+      ))
     ];
 
     initLua = ''
@@ -233,21 +241,6 @@
             vim.g.vimtex_syntax_enabled = 0
             map("n", "<leader>lv", "<cmd>VimtexView<CR>")
             map("n", "<leader>lc", "<cmd>VimtexCompile<CR>")
-          end,
-        },
-
-        {
-          "github/copilot.vim",
-          event = "InsertEnter",
-          config = function()
-            vim.g.copilot_no_tab_map = true
-            vim.g.copilot_enabled = true
-            map("i", "<C-l>", 'copilot#Accept("<CR>")', { silent = true, expr = true, replace_keycodes = false })
-            map("i", "<C-;>", 'copilot#AcceptLine("<CR>")', { silent = true, expr = true, replace_keycodes = false })
-            map("", "<leader>c", function()
-              vim.g.copilot_enabled = not vim.g.copilot_enabled
-              vim.notify("Copilot " .. (vim.g.copilot_enabled and "enabled" or "disabled"), "info")
-            end, { noremap = true, silent = true })
           end,
         },
 

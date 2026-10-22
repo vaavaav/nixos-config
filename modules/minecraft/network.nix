@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 let
   s = import ./settings.nix;
 
@@ -27,9 +27,13 @@ in
 
   networking.firewall = {
     enable = true;
+    # IPv4: refuse new connections from the Minecraft network to this machine.
+    # IPv6: accept the world ports (IPv6 only; IPv4 is behind CGNAT anyway).
     extraCommands = ''
       iptables -I nixos-fw 1 -i ${s.bridge} -m conntrack --ctstate NEW -j nixos-fw-refuse
-    '';
+    '' + lib.concatMapStrings (port: ''
+      ip6tables -I nixos-fw 1 -p tcp --dport ${toString port} -j nixos-fw-accept
+    '') s.publicPorts;
   };
 
   systemd.services.mc-network-isolation = {

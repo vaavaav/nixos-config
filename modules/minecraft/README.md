@@ -1,7 +1,11 @@
 # Minecraft module
 
 Everything needed to host Minecraft worlds on a machine: Docker, an isolated
-network, the playit.gg tunnel, the `mc` command and nightly backups.
+network, the firewall rules that let players in over IPv6, the `mc` command and
+nightly backups.
+
+Players connect to the machine's public IPv6 address, so players without IPv6
+can't connect.
 
 ## Adding it to a machine
 
@@ -11,71 +15,83 @@ network, the playit.gg tunnel, the `mc` command and nightly backups.
    imports = [ ../../modules/minecraft ];
    ```
 
-2. Rebuild:
+2. List the ports players will use in `settings.nix` (`publicPorts`, one per
+   world), then rebuild:
 
    ```bash
    sudo nixos-rebuild switch --flake .#<machine>
    ```
 
-3. Put the playit key on the machine (once; it is never stored in this repo):
+3. Log out and back in, so your user picks up the `docker` group.
 
-   ```bash
-   echo 'SECRET_KEY=...' | sudo tee /etc/playit/playit.env >/dev/null
-   sudo chmod 600 /etc/playit/playit.env
-   sudo systemctl restart docker-playit
-   ```
-
-4. Log out and back in, so your user picks up the `docker` group.
-
-5. Create a world and host it:
+4. Create a world and host it:
 
    ```bash
    mc create survival
-   mc host survival --ip 172.30.0.65
+   mc host survival --ip 172.30.0.65 --port 25565
    mc whitelist survival add YourName
    ```
 
-   Then point the playit tunnel at `172.30.0.65:25565`. `mc --help` lists every command.
+   `mc --help` lists every command.
 
-6. Copy existing worlds and backups from the old machine, if any:
+5. In the router's IPv6 firewall, allow TCP to this machine's stable IPv6
+   address on the same ports as `publicPorts`. Find the address with
+   `ip -6 addr show scope global` (the `mngtmpaddr` one, not `temporary`).
+
+6. Players connect to `[YOUR_IPV6]:25565` (brackets included).
+
+7. Copy existing worlds and backups from the old machine, if any:
    `/srv/minecraft` and `/srv/minecraft-backups`.
 
 ## Removing it from a machine
 
-Delete the import line and rebuild. Docker, the playit agent, the firewall rules,
-the `mc` command and the backup timer all go away.
+Delete the import line and rebuild. Docker, the firewall rules, the `mc` command
+and the backup timer all go away. Close the ports in the router too.
 
 These stay on disk until you delete them yourself:
 
 - `/srv/minecraft`
 - `/srv/minecraft-backups`
 - `/var/lib/docker`
-- `/etc/playit`
 
 ## Files
 
 | File | What it does |
 | --- | --- |
 | `mc.py` | The `mc` command |
-| `settings.nix` | All settings: network, folders, backups, blocked ranges, playit version and key path |
+| `settings.nix` | All settings: bind address, public ports, network, folders, backups, blocked ranges |
 | `docker.nix` | Docker, and your user in the `docker` group |
 | `network.nix` | The Minecraft network and the firewall rules around it |
-| `playit.nix` | The playit.gg agent |
 | `mc.nix` | The `mc` command (passes the settings to `mc.py` as `MC_*` environment variables), its folders and the nightly backup |
 
 ## Day to day
 
 - Check the next backup: `systemctl list-timers minecraft-backup`
 - Back up now: `sudo systemctl start minecraft-backup`
-- Check playit: `systemctl status docker-playit`
 - See the settings in use: `mc config`
 - List worlds: `mc list`
-- Update playit: change the version in `settings.nix`, then rebuild
+- Check what is listening: `sudo ss -tlnp | grep 2556`
+- Check the open ports: `sudo ip6tables -L nixos-fw -n | grep dpt`
+
+## Security
+
+- Only the ports in `publicPorts` are open, and only over IPv6.
+- Worlds start with online mode and the whitelist on. Keep them that way.
+- RCON stays inside the container (`mc console` uses `docker exec`), so its
+  port is never published.
+- The worlds' network can't open connections to the home network, VPNs or
+  Tailscale (`blockedRanges`), or to this machine.
+- Your home IPv6 address is visible to every player. A DDoS against it takes
+  down the whole home connection.
 
 ## Assumptions
 
 - **NixOS firewall:** the machine uses the default iptables-based NixOS firewall
   (`networking.nftables.enable` stays `false`).
+- **docker-proxy:** IPv6 reaches the IPv4-only containers through Docker's
+  userland proxy (`userland-proxy`, set in `docker.nix`). Players therefore show
+  up in the server logs as the network's gateway address, not their real IP, so
+  IP bans don't work; use name bans and the whitelist.
 - **User:** the user (`zezocas`) is set in `settings.nix`. It owns the world and
   backup folders and is the same user (UID 1000) the Minecraft containers run as.
 - **Docker group:** being in the `docker` group is as powerful as being root, so
@@ -85,7 +101,8 @@ These stay on disk until you delete them yourself:
   Minecraft network; change them in `settings.nix` if yours differ.
 - **Subnet clash:** the subnet in `settings.nix` doesn't clash with any network the
   machine is on.
-- **No open ports:** players connect through playit, so no ports are opened on
-  the router or the machine's firewall.
+- **Changing prefix:** the ISP can change the IPv6 prefix (for example after a
+  router restart). Then the address players use changes, and the router rule
+  must point to the new one.
 - **Same-disk backups:** backups are on the same disk as the worlds, so they don't
   survive a dead disk. Copy them elsewhere if that matters.

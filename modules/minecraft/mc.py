@@ -324,10 +324,15 @@ def world_settings(info):
     return s
 
 
+def host_addr(ip):
+    """IPv6 addresses go in brackets next to a port: '::' -> '[::]'."""
+    return f"[{ip}]" if ip and ":" in ip else ip
+
+
 def start_container(name, s):
     port = f"{s['PORT']}:{CONTAINER_PORT}"
     if s.get("HOST_IP"):
-        port = f"{s['HOST_IP']}:{port}"
+        port = f"{host_addr(s['HOST_IP'])}:{port}"
     args = [
         "run",
         "-d",
@@ -434,7 +439,7 @@ def network_subnet():
         die(
             f"the existing Docker network '{NETWORK}' doesn't match {CONFIG_FILE.name}: "
             f"{'; '.join(problems)}.\nEither change {CONFIG_FILE.name} back, or recreate the "
-            f"network: stop the worlds and the playit agent on it, run "
+            f"network: stop the worlds on it, run "
             f"'{docker_cmd()} network rm {NETWORK}', then host them again "
             f"(and update the firewall rules for the new bridge, see the README)."
         )
@@ -541,12 +546,12 @@ def pick_free_port(name, s):
 
 
 def describe_bind(s):
-    return f"{s.get('HOST_IP') or 'all addresses'}:{s['PORT']}"
+    return f"{host_addr(s.get('HOST_IP')) or 'all addresses'}:{s['PORT']}"
 
 
 def describe_address(s):
     """(host port, network address) for display."""
-    port = f"{s['HOST_IP']}:{s['PORT']}" if s.get("HOST_IP") else s["PORT"]
+    port = f"{host_addr(s['HOST_IP'])}:{s['PORT']}" if s.get("HOST_IP") else s["PORT"]
     ip = f"{s['IP']}:{CONTAINER_PORT}" if s.get("IP") else "-"
     return port, ip
 
@@ -898,13 +903,15 @@ def print_world(name, s, heading):
 def print_next_steps(name, s):
     port, ip = describe_address(s)
     print(f"\n'{name}' is starting (port {port}).")
-    if s.get("IP"):
-        print(f"playit agent on '{NETWORK}': point the tunnel at {ip}")
-    else:
+    bind = s.get("HOST_IP") or ""
+    if bind == "::" or not bind:
         print(
-            f"playit agent with --net=host: point the tunnel at "
-            f"{s.get('HOST_IP') or '127.0.0.1'}:{s['PORT']}"
+            f"Players connect to [YOUR_IPV6]:{s['PORT']} (see: ip -6 addr show scope global;"
+            f" use the 'mngtmpaddr' one). Port {s['PORT']} must be in publicPorts"
+            f" (settings.nix) and open in the router's IPv6 firewall."
         )
+    elif bind in ("127.0.0.1", "::1"):
+        print(f"Only reachable from this machine ({host_addr(bind)}:{s['PORT']}).")
     print("\nNext:")
     if s.get("ENABLE_WHITELIST") == "TRUE":
         print(
@@ -1151,10 +1158,6 @@ def cmd_unhost(a):
     print(f"'{a.name}' is no longer hosted. Its world is still in {s['DATA']}.")
     again = f"./mc.py host {s['DATA']}" + (f" --ip {s['IP']}" if s.get("IP") else "")
     print(f"Host it again with: {again}")
-    if s.get("IP"):
-        print(
-            f"(Its playit tunnel to {s['IP']}:{CONTAINER_PORT} does nothing until then.)"
-        )
 
 
 def cmd_rename(a):
@@ -1215,10 +1218,7 @@ def cmd_rename(a):
     else:
         print(f"  Folder:  unchanged ({old_data})")
     print(f"  Backups: {renamed} renamed to {new_name}-…")
-    if s.get("IP"):
-        print(
-            f"  Address: unchanged ({s['IP']}:{CONTAINER_PORT}), so the playit tunnel keeps working."
-        )
+    print(f"  Port:    unchanged ({describe_address(s)[0]})")
 
 
 def cmd_start(a):
@@ -1262,7 +1262,7 @@ def cmd_set(a):
     recreate(a.name, old, new)
     print_next_steps(a.name, new)
     print(
-        "\nRemember to update the playit tunnel (and any SRV records) to the new port/address."
+        "\nIf the port changed: update publicPorts in settings.nix, rebuild, and update the router."
     )
 
 
@@ -1597,7 +1597,8 @@ def build_parser():
     )
     h.add_argument(
         "--bind",
-        help=f"address the port listens on, 'all' for LAN (default: {DEFAULT_BIND})",
+        help=f"address the port listens on: '::' for IPv6 players, 127.0.0.1 for this "
+        f"machine only, 'all' for IPv4+IPv6 (default: {DEFAULT_BIND})",
     )
     h.add_argument("--version", help="Minecraft version (default: the world's own)")
     h.add_argument("--memory", help=f"RAM (default: {DEFAULT_MEMORY})")
@@ -1666,7 +1667,7 @@ def build_parser():
         "--ip", help=f"new address on '{NETWORK}', or 'none' to leave the network"
     )
     st.add_argument("--port", type=int, help="new port on this computer")
-    st.add_argument("--bind", help="address the port listens on, or 'all'")
+    st.add_argument("--bind", help="address the port listens on: '::', 127.0.0.1 or 'all'")
 
     u = command(
         "upgrade",
